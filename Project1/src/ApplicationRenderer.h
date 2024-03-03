@@ -11,8 +11,6 @@
 #include "Transform.h"
 #include"LightManager.h"
 #include "Random.h"
-#include "PhysicsEngine.h"
-#include "Skybox.h"
 #include "Time.h"
 #include "SkyboxMaterial.h"
 #include "GraphicsRender.h"
@@ -23,8 +21,12 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "FrameBuffer.h"
+#include "DebugModels.h"
+#include "InputManager/InputManager.h"
 #include "EntityManager/EntityManager.h"
-#include "Animation/AnimationSystem.h"
+#include "CameraManager.h"
+
 
 class ApplicationRenderer
 {
@@ -38,6 +40,8 @@ public:
 	void MouseScroll(GLFWwindow* window, double xoffset, double yoffset);
 	
 	void WindowInitialize(int width, int height,  std::string windowName ="Window");
+	void InitializeShaders();
+	void InitializeSkybox();
 	
 	void Start();
 	void PreRender();
@@ -46,35 +50,45 @@ public:
 	void Clear();
 
 	void ProcessInput(GLFWwindow* window);
+
+	void EngineGraphicsRender();
+	void EngineGameLoop();
+	void RenderForCamera(Camera* camera, FrameBuffer* framebuffer);
 	
+	FrameBufferSpecification specification;
+	FrameBuffer* sceneViewframeBuffer;
+	FrameBuffer* gameframeBuffer;
+	Camera* sceneViewcamera;
+	Camera* gameScenecamera;
+	Camera* renderTextureCamera;
+	bool isPlayMode = false;
 
-
-
+	glm::mat4 projection;
+	glm::mat4 view;
+	glm::mat4 skyBoxView;
+	int windowWidth;
+	int  WindowHeight;
 private:
-	void AnimationScene();
-
 	GLFWwindow* window;
-	Camera camera;
+	
 	
 
-	GraphicsRender render;
-	LightManager lightManager;
+	//GraphicsRender render;
 
 	Shader* defaultShader;
-	Shader* SolidColorShader;
+	Shader* solidColorShader;
 	Shader* alphaBlendShader;
 	Shader* alphaCutoutShader;
 
-	Shader* StencilShader;
-	Shader* SkyboxShader;
+	Shader* stencilShader;
+	Shader* skyboxShader;
 
-	Skybox* skybox;
 
-	PhysicsEngine PhysicsEngine;
-	PanelManager* panelManager;
+	SkyboxMaterial* skyBoxMaterial;
 
-	 int windowWidth;
-	 int  WindowHeight;
+	Model* skyBoxModel;
+
+
 	 int selectedModelCount = 0;
 
 	 float lastX;
@@ -86,11 +100,7 @@ private:
 	 float scrollTime;
 
 	 bool firstMouse;
-	 bool playAnimation = false;
-	 bool imguiRender = false;
+	 bool isImguiPanelsEnable = false;
 
-	 unsigned long long m_FrameNumber = 0;
-
-	 double timeElapsed = 0;
 };
 

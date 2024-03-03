@@ -24,7 +24,7 @@
     <ProjectGuid>{c65d6234-3971-4803-b746-e75e47b920d8}</ProjectGuid>
     <RootNamespace>Project1</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Animation_Project2</ProjectName>
+    <ProjectName>Graphics</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -141,12 +141,29 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Dependencies\glad\src\glad.c" />
-    <ClCompile Include="src\Animation\AnimationSequence.cpp" />
-    <ClCompile Include="src\Animation\AnimationSystem.cpp" />
-    <ClCompile Include="src\Animation\Animation.cpp" />
+    <ClCompile Include="Extern\imGui\ImCurveEdit.cpp" />
+    <ClCompile Include="Extern\imGui\ImGradient.cpp" />
+    <ClCompile Include="Extern\imGui\ImGuizmo.cpp" />
+    <ClCompile Include="Extern\imGui\ImSequencer.cpp" />
+    <ClCompile Include="src\Math.cpp" />
+    <ClCompile Include="src\PostProcessing\SinglePassEffect.cpp" />
+    <ClCompile Include="src\PostProcessing\PixelizationEffect.cpp" />
+    <ClCompile Include="src\Quad.cpp" />
+    <ClCompile Include="src\PostProcessing\ChromaticEffect.cpp" />
+    <ClCompile Include="src\PostProcessing\BaseEffect.cpp" />
+    <ClCompile Include="src\PostProcessing\PostProcessing.cpp" />
+    <ClCompile Include="src\ImGui\GameViewportPanel.cpp" />
+    <ClCompile Include="src\CameraManager.cpp" />
+    <ClCompile Include="src\BaseTexture.cpp" />
+    <ClCompile Include="src\RenderTexture.cpp" />
+    <ClCompile Include="src\InputManager\InputManager.cpp" />
+    <ClCompile Include="src\DebugModels.cpp" />
+    <ClCompile Include="src\FrameBuffer.cpp" />
+    <ClCompile Include="src\ImGui\SceneViewportPanel.cpp" />
     <ClCompile Include="src\ImGui\EditorLayout.cpp" />
     <ClCompile Include="src\EntityManager\EntityManager.cpp" />
     <ClCompile Include="src\EntityManager\Entity.cpp" />
+    <ClCompile Include="src\ImGui\ImGuiUtils.cpp" />
     <ClCompile Include="src\Object.cpp" />
     <ClCompile Include="src\ImGui\Heirachy.cpp" />
     <ClCompile Include="src\ImGui\BasePanel.cpp" />
@@ -171,8 +188,6 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\material.cpp" />
     <ClCompile Include="src\mesh.cpp" />
-    <ClCompile Include="src\PhysicsEngine.cpp" />
-    <ClCompile Include="src\PhysicsObject.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\model.cpp" />
@@ -184,15 +199,36 @@
     <ClCompile Include="src\VertexBuffer.cpp" />
     <ClCompile Include="src\Time.cpp" />
     <ClCompile Include="src\UnLitMaterial.cpp" />
+    <ClCompile Include="src\ImGui\WindowDockingPanel.cpp" />
+    <ClCompile Include="src\ImGui\ToolPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\stb_image.h" />
-    <ClInclude Include="src\Animation\AnimationSequence.h" />
-    <ClInclude Include="src\Animation\AnimationSystem.h" />
-    <ClInclude Include="src\Animation\Animation.h" />
+    <ClInclude Include="Extern\imGui\ImCurveEdit.h" />
+    <ClInclude Include="Extern\imGui\ImGradient.h" />
+    <ClInclude Include="Extern\imGui\ImGuizmo.h" />
+    <ClInclude Include="Extern\imGui\ImSequencer.h" />
+    <ClInclude Include="Extern\imGui\ImZoomSlider.h" />
+    <ClInclude Include="src\Math.h" />
+    <ClInclude Include="src\PostProcessing\SinglePassEffect.h" />
+    <ClInclude Include="src\PostProcessing\PixelizationEffect.h" />
+    <ClInclude Include="src\Quad.h" />
+    <ClInclude Include="src\PostProcessing\ChromaticEffect.h" />
+    <ClInclude Include="src\PostProcessing\BaseEffect.h" />
+    <ClInclude Include="src\PostProcessing\PostProcessing.h" />
+    <ClInclude Include="src\ImGui\GameViewportPanel.h" />
+    <ClInclude Include="src\CameraManager.h" />
+    <ClInclude Include="src\BaseTexture.h" />
+    <ClInclude Include="src\RenderTexture.h" />
+    <ClInclude Include="src\InputManager\InputManager.h" />
+    <ClInclude Include="src\DebugModels.h" />
+    <ClInclude Include="src\FrameBuffer.h" />
+    <ClInclude Include="src\InputManager\iInputOberver.h" />
+    <ClInclude Include="src\ImGui\SceneViewportPanel.h" />
     <ClInclude Include="src\ImGui\EditorLayout.h" />
     <ClInclude Include="src\EntityManager\EntityManager.h" />
     <ClInclude Include="src\EntityManager\Entity.h" />
+    <ClInclude Include="src\ImGui\ImGuiUtils.h" />
     <ClInclude Include="src\Object.h" />
     <ClInclude Include="src\ImGui\Heirachy.h" />
     <ClInclude Include="src\ImGui\BasePanel.h" />
@@ -220,9 +256,6 @@
     <ClInclude Include="src\mesh.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\model.h" />
-    <ClInclude Include="src\PhysicsCollisionTypes.h" />
-    <ClInclude Include="src\PhysicsEngine.h" />
-    <ClInclude Include="src\PhysicsObject.h" />
     <ClInclude Include="src\Random.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
@@ -236,23 +269,29 @@
     <ClInclude Include="src\VertexBufferLayout.h" />
     <ClInclude Include="src\Time.h" />
     <ClInclude Include="src\UnLitMaterial.h" />
+    <ClInclude Include="src\ImGui\WindowDockingPanel.h" />
+    <ClInclude Include="src\ImGui\ToolPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\color.frag" />
     <None Include="Shaders\color.vert" />
     <None Include="Shaders\DefaultShader_Fragment.frag" />
     <None Include="Shaders\DefaultShader_Vertex.vert" />
+    <None Include="Shaders\PostProcessing\Chromatic.frag" />
+    <None Include="Shaders\PostProcessing\Chromatic.vert" />
     <None Include="Shaders\lighting.frag" />
     <None Include="Shaders\lighting.vert" />
     <None Include="Shaders\Light_FragmentShader2.frag" />
+    <None Include="Shaders\PostProcessing\FinalOutputShader.frag" />
+    <None Include="Shaders\PostProcessing\FinalOutputShader.vert" />
+    <None Include="Shaders\PostProcessing\Pixelization.frag" />
+    <None Include="Shaders\PostProcessing\Pixelization.vert" />
     <None Include="Shaders\ScrollTexture.frag" />
     <None Include="Shaders\ScrollTexture.vert" />
     <None Include="Shaders\Shader.frag" />
     <None Include="Shaders\Shader.vert" />
     <None Include="Shaders\SkyboxShader.frag" />
     <None Include="Shaders\SkyboxShader.vert" />
-    <None Include="Shaders\SolidColor_Fragment.frag" />
-    <None Include="Shaders\SolidColor_Vertex.vert" />
     <None Include="Shaders\StencilOutline.frag" />
     <None Include="Shaders\StencilOutline.vert" />
     <None Include="Source.frag" />
