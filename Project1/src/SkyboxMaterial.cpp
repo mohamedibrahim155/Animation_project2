@@ -11,7 +11,7 @@ SkyboxMaterial::~SkyboxMaterial()
 
 void SkyboxMaterial::UpdateMaterial(Shader* shader)
 {
-    this->skyBoxTexture->SetActiveTexture(0);
+    this->skyBoxTexture->SetTextureSlot(0);
     shader->setInt("skybox", 0);
     this->skyBoxTexture->Bind();
 }

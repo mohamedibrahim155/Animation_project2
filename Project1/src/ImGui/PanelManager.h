@@ -25,12 +25,8 @@ public:
 	void Update(float windowWidth, float windowHeight);
 private:
 
-	BasePanel* hierarchyPanel;
-	BasePanel* InspectorPanel;
 
 	bool dockOpen = true;
-
-	bool isPanelRendering = true;
 
 
 	std::vector<BasePanel*> listOfPanels;

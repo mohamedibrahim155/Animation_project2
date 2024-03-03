@@ -41,44 +41,44 @@ public:
 	GraphicsRender();
 	~GraphicsRender();
 
-	void AddModelsAndShader(Model* model, Shader* Shader);
-	void AddAlphaModelsAndShader(Model* model, Shader* Shader);
-	void AddModelsAndShader(Model& model, Shader& Shader);
-	void AddModelAndShader(Model* model, Shader* Shader);
+	static GraphicsRender& GetInstance();
 
-	void AddTransparentModels(Model* model, Shader* Shader);
-	
-	void AssignStencilShader( Shader* Shader);
 
-	void AssignCamera(Camera* cam);
+	void AddModelAndShader(Model* model, Shader* shader);
+	void RemoveModel(Model* model);
+
+	void SetCamera(Camera* camera);
 
 	void SortObject();
 	
 	std::vector<Model*> GetModelList();
 
-	
+	void InitializeGraphics();
 	void Draw();
+	void Clear();
+	void DrawSphere(glm::vec3 center, float radius, glm::vec4 color, bool isWireFrame = false);
+	void DrawBox(glm::vec3 center, glm::vec3 dimensions, glm::vec4 color ,bool isWireFrame = false);
+	void DrawLine(glm::vec3 start, glm::vec3 endpoint, glm::vec4 color);
 
 	Model* selectedModel;
 	Model* SkyBoxModel;
-	
+	Shader* defaultShader;
+	Shader* solidColorShader;
+	Shader* stencilShader;
+	void SetSelectedModel(Model* model);
+	Model* GetSelectedModel();
 
 private:
-	Shader* m_StencilShader;
+	
 
 	void ClearData();
 
-	std::vector<Model*> m_Models;
-	std::vector<Shader*> m_Shaders;
-
-	std::vector<Model*> m_transparentModels;
-	std::vector<Shader*> m_transparentShaders;
 
 
 	std::vector<ModelAndShader*> modelAndShaderList;
 	std::vector<ModelAndShader*> transparentmodelAndShaderList;
 
-	Camera* cam;
+	Camera* camera;
 
 };
 

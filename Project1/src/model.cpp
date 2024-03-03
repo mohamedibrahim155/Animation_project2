@@ -1,6 +1,6 @@
 #include "model.h"
-
-
+#include "ImGui/EditorLayout.h"
+#include "GraphicsRender.h"
 
 aiMesh* ai_Mesh;
 
@@ -9,7 +9,7 @@ Model::Model()
 
 }
 
-Model::Model(const Model& copyModel)
+Model::Model(const Model& copyModel, bool isDebugModel)
 {
     meshes = copyModel.meshes;
     directory = copyModel.directory;
@@ -17,18 +17,17 @@ Model::Model(const Model& copyModel)
     isWireFrame = copyModel.isWireFrame;
     modelPath = copyModel.modelPath;
     isLoadTexture = copyModel.isLoadTexture;
+
+    SetModelName();
+    if (isDebugModel) return;
+
+    InitializeEntity(this);
 }
 
-Model::Model( std::string const& path, bool isLoadTexture, bool isTextureFlip, bool isTransparancy, bool isCutOut)
-           
+Model::Model(std::string const& path, bool isLoadTexture, bool isDebugModel)
 {
-
-    this->modelPath = path;
     this->isLoadTexture = isLoadTexture;
-    this->isTextureFlipped = isTextureFlip;
-    this->isTransparant = isTransparancy;
-    this->isCutOut = isCutOut;
-    LoadModel(path, isLoadTexture);
+    LoadModel(path, this->isLoadTexture, isDebugModel);
 }
 
 Model::~Model()
@@ -44,6 +43,8 @@ Model::~Model()
 
     meshes.clear();
 }
+
+
 
 
 
@@ -86,9 +87,50 @@ void Model::Draw(Shader* shader)
     }
 }
 
+void Model::DrawSolidColor(const glm::vec4& color, bool isWireframe)
+{
+    if (!isVisible)
+    {
+        return;
+    }
+
+    Shader* solidShader = GraphicsRender::GetInstance().solidColorShader;
+
+    solidShader->Bind();
+    if (solidShader->modelUniform)
+    {
+        solidShader->setMat4("model", transform.GetModelMatrix());
+    }
+    
+    for (unsigned int i = 0; i < meshes.size(); i++)
+    {
+        meshes[i]->isWireFrame = isWireframe;
+        meshes[i]->DrawSolidColorMesh(solidShader, color);
+    }
+}
 
 
-void Model::LoadModel(std::string const& path, bool isLoadTexture)
+
+void Model::LoadModel(const Model& copyModel, bool isDebugModel)
+{
+    meshes = copyModel.meshes;
+    directory = copyModel.directory;
+    isVisible = copyModel.isVisible;
+    isWireFrame = copyModel.isWireFrame;
+    modelPath = copyModel.modelPath;
+    isLoadTexture = copyModel.isLoadTexture;
+
+    if (name.empty())
+    {
+        SetModelName();
+    }
+
+    if (isDebugModel) return;
+    InitializeEntity(this);
+
+
+}
+void Model::LoadModel(std::string const& path, bool isLoadTexture, bool isDebugModel)
 {
     this->isLoadTexture = isLoadTexture;
     this->modelPath = path;
@@ -107,6 +149,9 @@ void Model::LoadModel(std::string const& path, bool isLoadTexture)
     ProcessNode(scene->mRootNode, scene);
     std::cout << " Loaded  Model file  : " << directory << " Mesh count : " << scene->mNumMeshes << std::endl;
 
+    SetModelName();
+
+    if (isDebugModel) return;
     InitializeEntity(this);
 }
 
@@ -213,7 +258,9 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             baseMeshMaterial->material()->specularTexture = LoadMaterialTexture(m_aiMaterial, aiTextureType_SPECULAR, "specular_Texture");
             baseMeshMaterial->material()->alphaTexture = LoadMaterialTexture(m_aiMaterial, aiTextureType_OPACITY, "opacity_Texture");
 
-            if (baseMeshMaterial->material()->alphaTexture->path != alphaTextureDefaultPath)
+            Texture* materialTexture = (Texture*)baseMeshMaterial->material()->alphaTexture;
+
+            if (materialTexture->path != alphaTextureDefaultPath)
             {
                 baseMeshMaterial->material()->useMaskTexture = true;
             }
@@ -233,6 +280,7 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         baseMeshMaterial->unLitMaterial()->SetBaseColor(glm::vec4(baseColor.r, baseColor.g, baseColor.b, baseColor.a));
     }
 
+   
 
     return std::make_shared<Mesh>(vertices, indices, baseMeshMaterial);
  }
@@ -373,11 +421,11 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
      }
  }
 
- void Model::Start()
+ void Model::SetModelName()
  {
      int lastSlastPosition = modelPath.find_last_of('/');
 
-     if (lastSlastPosition!= std::string::npos)
+     if (lastSlastPosition != std::string::npos)
      {
          name = modelPath.substr(lastSlastPosition + 1);
      }
@@ -385,6 +433,23 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
      {
          name = modelPath;
      }
+
+     for (int i = 0; i < meshes.size(); i++)
+     {
+         if (meshes[i]->name.empty())
+         {
+             meshes[i]->name = "mesh " + std::to_string(i + 1);
+         }
+     }
+ }
+
+ void Model::Render()
+ {
+ }
+
+ void Model::Start()
+ {
+    
  }
 
  void Model::Update(float deltaTime)
@@ -393,14 +458,15 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
  void Model::OnDestroy()
  {
+     GraphicsRender::GetInstance().RemoveModel(this);
  }
 
- void Model::OnPropertyDraw()
+ void Model::DrawProperties()
  {
-     Entity::OnPropertyDraw();
+     Entity::DrawProperties();
  }
 
- void Model::OnSceneDraw()
+ void Model::SceneDraw()
  {
      ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
      node_flags |= ImGuiTreeNodeFlags_SpanFullWidth;
@@ -414,7 +480,10 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
      if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
      {
-        // OnModelSelected();
+         GraphicsRender::GetInstance().SetSelectedModel(this);
+
+         EditorLayout::GetInstance().SetSelectedObjects({ this });
+
      }
 
 
@@ -434,8 +503,9 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
              ImGui::TreeNodeEx(mesh->name.c_str(), leaf_flags);
              if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
              {
-                // Renderer::GetInstance().SetSelectedModel(this);
-               //  EditorLayout::GetInstance().SetSelectedObjects({ mesh->mesh.get(), mesh->material });
+                 GraphicsRender::GetInstance().SetSelectedModel(this);
+             
+                 EditorLayout::GetInstance().SetSelectedObjects({ mesh.get() });
              }
          }
 

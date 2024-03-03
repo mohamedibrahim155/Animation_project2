@@ -76,7 +76,7 @@ void Skybox::SkyboxPrerender()
        ("Textures/skybox/back.jpg")
     };
 
-    cubemapTexture = skyboxTexture->loadCubemap(faces);
+    //cubemapTexture = skyboxTexture->loadCubemap(faces);
 
     skyboxShader->Bind();
     skyboxShader->setInt("skybox",0);

@@ -1,5 +1,5 @@
 #include "EntityManager.h"
-#include "../Animation/Animation.h"
+
 EntityManager& EntityManager::GetInstance()
 {
     // TODO: insert return statement here
@@ -68,9 +68,8 @@ void EntityManager::Update(float deltaTime)
     for (const std::string& id : destroyedEntityList)
     {
         listOfEntities[id] = nullptr;
-
         delete listOfEntities[id];
-        
+
         listOfEntities.erase(id);
     }
     destroyedEntityList.clear();
@@ -86,7 +85,6 @@ void EntityManager::Update(float deltaTime)
             }
 
             item.second->Update(deltaTime);
-
         }
     }
     catch (const std::exception& e)
@@ -100,4 +98,29 @@ void EntityManager::Destroy(Entity* entity)
     entity->OnDestroy();
 }
 
+void EntityManager::Render()
+{
+    for (const std::string& id : destroyedEntityList)
+    {
+        listOfEntities[id] = nullptr;
+        delete listOfEntities[id];
 
+        listOfEntities.erase(id);
+    }
+    destroyedEntityList.clear();
+
+    try
+    {
+        for (std::pair<const std::string&, Entity*> item : listOfEntities)
+        {
+            if (item.second->isEnabled)
+            {
+                item.second->Render();
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+}

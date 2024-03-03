@@ -37,12 +37,16 @@ public:
     void SetOrientationFromDirections(glm::vec3 newUp, glm::vec3 newRight);
 
     // Inherited via Object
-    void OnPropertyDraw() override;
-    void OnSceneDraw() override;
+    void DrawProperties() override;
+    void SceneDraw() override;
 private:
 
     void UpdateQuaternionFromEuler();
     void UpdateEulerFromQuaternion();
+
+    float positionWidth = 150;
+    float rotationWidth = 100;
+    float scaleWidth = 100;
     
 
 

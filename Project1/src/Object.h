@@ -2,10 +2,12 @@
 #include <string>
 #include <imgui.h>
 #include <imgui_internal.h>
+
+#include "ImGui/ImGuiUtils.h"
 class Object
 {
 public :
-	Object();
+//	Object();
   //  ~Object();
 
 	static unsigned int ID;
@@ -15,7 +17,7 @@ public :
 	bool isSelected = false;
 	bool isEnabled = true;
 
-	virtual void OnPropertyDraw() = 0;
-	virtual void OnSceneDraw() = 0;
+	virtual void DrawProperties() = 0;
+	virtual void SceneDraw() = 0;
 };
 

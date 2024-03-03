@@ -2,6 +2,13 @@
 #include <glm/glm.hpp>
 #include "Renderer.h"
 
+Shader::Shader()
+{
+    this->blendMode = OPAQUE;
+    rendererID = -1;
+
+}
+
 Shader::Shader(const char* vertexPath, const char* fragmentPath, BlendMode type)
 {
     this->blendMode = type;
@@ -48,11 +55,11 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, BlendMode type)
     GLCALL(glCompileShader(fragment));
     checkCompileErrors(fragment, "FRAGMENT");
     // shader Program
-    ID = glCreateProgram();
-    GLCALL( glAttachShader(ID, vertex));
-    GLCALL(glAttachShader(ID, fragment));
-    GLCALL( glLinkProgram(ID));
-    checkCompileErrors(ID, "PROGRAM");
+    rendererID = glCreateProgram();
+    GLCALL( glAttachShader(rendererID, vertex));
+    GLCALL(glAttachShader(rendererID, fragment));
+    GLCALL( glLinkProgram(rendererID));
+    checkCompileErrors(rendererID, "PROGRAM");
     // delete the shaders as they're linked into our program now and no longer necessary
     GLCALL(glDeleteShader(vertex));
     GLCALL(glDeleteShader(fragment));
@@ -60,12 +67,68 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath, BlendMode type)
 
 Shader::~Shader()
 {
-    GLCALL(glDeleteProgram(ID));
+    GLCALL(glDeleteProgram(rendererID));
+}
+
+void Shader::LoadShader(const char* vertexPath, const char* fragmentPath, BlendMode type)
+{
+    this->blendMode = type;
+    // 1. retrieve the vertex/fragment source code from filePath
+    std::string vertexCode;
+    std::string fragmentCode;
+    std::ifstream vShaderFile;
+    std::ifstream fShaderFile;
+    // ensure ifstream objects can throw exceptions:
+    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+    {
+        // open files
+        vShaderFile.open(vertexPath);
+        fShaderFile.open(fragmentPath);
+        std::stringstream vShaderStream, fShaderStream;
+        // read file's buffer contents into streams
+        vShaderStream << vShaderFile.rdbuf();
+        fShaderStream << fShaderFile.rdbuf();
+        // close file handlers
+        vShaderFile.close();
+        fShaderFile.close();
+        // convert stream into string
+        vertexCode = vShaderStream.str();
+        fragmentCode = fShaderStream.str();
+    }
+    catch (std::ifstream::failure& e)
+    {
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
+    }
+    const char* vShaderCode = vertexCode.c_str();
+    const char* fShaderCode = fragmentCode.c_str();
+    // 2. compile shaders
+    unsigned int vertex, fragment;
+    // vertex shader
+    vertex = glCreateShader(GL_VERTEX_SHADER);
+    GLCALL(glShaderSource(vertex, 1, &vShaderCode, NULL));
+    GLCALL(glCompileShader(vertex));
+    checkCompileErrors(vertex, "VERTEX");
+    // fragment Shader
+    fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    GLCALL(glShaderSource(fragment, 1, &fShaderCode, NULL));
+    GLCALL(glCompileShader(fragment));
+    checkCompileErrors(fragment, "FRAGMENT");
+    // shader Program
+    rendererID = glCreateProgram();
+    GLCALL(glAttachShader(rendererID, vertex));
+    GLCALL(glAttachShader(rendererID, fragment));
+    GLCALL(glLinkProgram(rendererID));
+    checkCompileErrors(rendererID, "PROGRAM");
+    // delete the shaders as they're linked into our program now and no longer necessary
+    GLCALL(glDeleteShader(vertex));
+    GLCALL(glDeleteShader(fragment));
 }
 
 void Shader::Bind() const
 {
-    GLCALL(glUseProgram(ID));
+    GLCALL(glUseProgram(rendererID));
 }
 
 void Shader::Unbind() const
@@ -132,7 +195,7 @@ unsigned int Shader::FindUniformLocations(const std::string& name)
     {
         return m_LocationCache[name];
     }
-    GLCALL(int value = glGetUniformLocation(ID, name.c_str()));
+    GLCALL(int value = glGetUniformLocation(rendererID, name.c_str()));
 
     if (value == -1)
     {
@@ -140,6 +203,11 @@ unsigned int Shader::FindUniformLocations(const std::string& name)
     }
    m_LocationCache[name] = value;
    return value;
+}
+
+unsigned int& Shader::GetShaderId()
+{
+    return rendererID;
 }
 
 void Shader::checkCompileErrors(unsigned int shader, std::string type)

@@ -125,16 +125,14 @@ void Material::UpdateMaterial(Shader* shader)
 
     if (this->diffuseTexture != nullptr)
     {
-
-        GLCALL(glActiveTexture(GL_TEXTURE0 + 0));
+        this->diffuseTexture->SetTextureSlot(0);
         shader->setInt("diffuse_Texture", 0);
         this->diffuseTexture->Bind();
 
     }
     if (this->specularTexture != nullptr)
     {
-
-        GLCALL(glActiveTexture(GL_TEXTURE0 + 1));
+        this->specularTexture->SetTextureSlot(1);
         shader->setInt("specular_Texture", 1);
         this->specularTexture->Bind();
 
@@ -142,7 +140,7 @@ void Material::UpdateMaterial(Shader* shader)
 
     if (this->alphaTexture != nullptr)
     {
-        GLCALL(glActiveTexture(GL_TEXTURE0 + 2));
+        this->alphaTexture->SetTextureSlot(2);
         shader->setInt("opacity_Texture", 2);
         this->alphaTexture->Bind();
     }

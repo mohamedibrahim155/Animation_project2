@@ -46,22 +46,27 @@ public:
     float size;
 
     bool gammaCorrection;
-    bool isTransparant = false;
-    bool isCutOut = false;
     bool isWireFrame;
     bool isVisible = true;
     bool isLoadTexture;
 
     Model();
-    Model(const Model& copyModel);
-    Model( std::string const& path, bool isLoadTexture =true, bool isTextureFlip=true, bool isTransparancy= false, bool isCutOut = false);
+    Model(const Model& copyModel, bool isDebugModel = false);
+    Model(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false);
     ~Model();
-    void LoadModel(std::string const& path , bool isLoadTexture =true);
+    void LoadModel(const Model& copyModel, bool isDebugModel = false);
+    void LoadModel(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false);
     void Draw(Shader& shader);
     void Draw(Shader* shader);
+    void DrawSolidColor(const glm::vec4& color, bool isWireframe = false);
     
-    virtual void OnPropertyDraw();
-    virtual void OnSceneDraw();
+    virtual void DrawProperties();
+    virtual void SceneDraw();
+
+    virtual void Start() override;
+    virtual void Update(float deltaTime) override;
+    virtual void Render();
+    virtual void OnDestroy();
 private:
     
     void ProcessNode(aiNode* node, const aiScene* scene);   
@@ -73,14 +78,16 @@ private:
 
     std::string TextureType(aiTextureType type);
    
-    bool isTextureFlipped = true;
+    void SetModelName();
 
     const std::string alphaTextureDefaultPath = "Textures/DefaultTextures/Opacity_Default.png";
 
     // Inherited via Entity
-    void Start() override;
-    void Update(float deltaTime) override;
-    virtual void OnDestroy();
+
+
+    // Inherited via Entity
+  
+
 };
 
 

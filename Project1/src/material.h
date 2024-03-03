@@ -28,9 +28,9 @@ public:
 	Material(const Material& material);
 	~Material();
 
-	Texture* diffuseTexture; 
-	Texture* specularTexture;
-	Texture* alphaTexture;
+	BaseTexture* diffuseTexture; 
+	BaseTexture* specularTexture;
+	BaseTexture* alphaTexture;
 	AmbientType ambientType;
 
 	float ambient;

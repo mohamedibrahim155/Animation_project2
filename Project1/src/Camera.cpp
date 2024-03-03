@@ -1,6 +1,62 @@
 #include <iostream>
 #include "Camera.h"
+#include "CameraManager.h"
+#include "GraphicsRender.h"
 
+Camera::Camera()
+{
+    name = "Camera";
+    tag = "Camera";
+    
+    CameraManager::GetInstance().AddCamera(this);
+}
+
+Camera::~Camera()
+{
+    CameraManager::GetInstance().RemoveCamera(this);
+
+}
+
+//Camera::Camera(glm::vec3 position, glm::vec3 up) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), fov(ZOOM)
+//{
+//    // Position = position;
+//   //  WorldUp = up;
+//    // Yaw = yaw;
+//    // Pitch = pitch;
+//
+//
+//     //Initial Values
+//    transform.SetPosition(glm::vec3(position));
+//    transform.SetOrientationFromDirections(up, up);
+//    transform.SetRotation(glm::vec3(0.0f, 180, 0.0f));
+//    name = "Camera";
+//
+//    SetCameraType(CameraType::PERSPECTIVE);
+//
+//    SetProjection();
+//
+//    InitializeEntity(this);
+//}
+//
+//Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), fov(ZOOM)
+//{
+//    // Position = glm::vec3(posX, posY, posZ);
+//    // WorldUp = glm::vec3(upX, upY, upZ);
+//    // Yaw = yaw;
+//    // Pitch = pitch;
+//    name = "Camera";
+//
+//    //Initial Values
+//    transform.SetPosition(glm::vec3(posX, posY, posZ));
+//    transform.SetOrientationFromDirections(glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
+//    transform.SetRotation(glm::vec3(0.0f, 180.0f, 0.0f));
+//
+//    SetCameraType(CameraType::PERSPECTIVE);
+//
+//    SetProjection();
+//
+//    InitializeEntity(this);
+//}
 
 
 
@@ -10,6 +66,95 @@ glm::mat4 Camera::GetViewMatrix()
     glm::mat4 viewMat = glm::mat4(1.0f);
     viewMat = glm::lookAt(transform.position, transform.position + transform.GetForward(), transform.GetUp());
     return viewMat;
+}
+
+//void Camera::InitializeCamera(const CameraType& cameraType)
+//{
+//    transform.SetPosition(glm::vec3(glm::vec3(0.0f, 0.0f, 0.0f)));
+//
+//    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+//    transform.SetOrientationFromDirections(up, up);
+//
+//    transform.SetRotation(glm::vec3(0.0f, 180, 0.0f));
+//
+//    MovementSpeed = SPEED;
+//    MouseSensitivity = SENSITIVITY;
+//    fov = ZOOM;
+//    nearPlane = DEFAULT_NEARPLANE;
+//    farPlane = DEFAULT_FARPLANE;
+//
+//
+//    SetCameraWidthAndHeight(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+//
+//    SetCameraType(cameraType);
+//
+//
+//    SetProjection();
+//
+//    InitializeEntity(this);
+//}
+
+void Camera::InitializeCamera(CameraType cameraType, float fov, float nearPlane, float farPlane)
+{
+
+    transform.SetPosition(glm::vec3(glm::vec3(0.0f, 0.0f, 0.0f)));
+
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    transform.SetOrientationFromDirections(up, up);
+
+    transform.SetRotation(glm::vec3(0.0f, 180, 0.0f));
+
+    MovementSpeed = SPEED;
+    MouseSensitivity = SENSITIVITY;
+    this->fov = fov;
+    this->nearPlane = nearPlane;
+    this->farPlane = farPlane;
+
+
+    SetCameraWidthAndHeight(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+
+    SetCameraType(CameraType::PERSPECTIVE);
+
+
+    SetProjection();
+
+    postprocessing = new PostProcessing(glm::vec2(cameraWidth, cameraHeight));
+
+    InitializeEntity(this);
+
+ 
+}
+
+void Camera::IntializeRenderTexture(FrameBufferSpecification framebufferSpecs)
+{
+    renderTexture = new RenderTexture(framebufferSpecs);
+
+
+}
+
+void Camera::SetProjection()
+{
+    aspectRatio = cameraWidth / cameraHeight;
+    
+    if (cameraType == CameraType::PERSPECTIVE)
+    {
+      
+
+       projectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+    }
+    else
+    {
+       
+        float orthoLeft = -cameraWidth / 2.0f;
+        float orthoRight = cameraWidth / 2.0f;
+        float orthoBottom = -cameraHeight / 2.0f;
+        float orthoTop = cameraHeight / 2.0f;
+
+
+        projectionMatrix = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, nearPlane, farPlane);
+     
+    }
+    
 }
 
 // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
@@ -57,11 +202,11 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 void Camera::ProcessMouseScroll(float yoffset)
 {
-    Zoom -= (float)yoffset;
-    if (Zoom < 1.0f)
-        Zoom = 1.0f;
-    if (Zoom > 45.0f)
-        Zoom = 45.0f;
+    fov -= (float)yoffset;
+    if (fov < 1.0f)
+        fov = 1.0f;
+    if (fov > 45.0f)
+        fov = 45.0f;
 }
 
 
@@ -72,6 +217,7 @@ void Camera::updateCameraVectors()
     front.x = cos(glm::radians(transform.rotation.y)) * cos(glm::radians(transform.rotation.x));
     front.y = sin(glm::radians(transform.rotation.x));
     front.z = sin(glm::radians(transform.rotation.y)) * cos(glm::radians(transform.rotation.x));
+
     transform.SetForward(glm::normalize(front));
 
     
@@ -79,7 +225,68 @@ void Camera::updateCameraVectors()
     
 }
 
+void Camera::Resize(float width, float height)
+{
+    this->cameraWidth = width;
+    this->cameraHeight = height;
+
+    SetProjection();
+}
+
+void Camera::SetCameraType(const CameraType& type)
+{
+    this->cameraType = type;
+}
+
+void Camera::SetCameraWidthAndHeight(float width, float height)
+{
+    cameraWidth = width;
+    cameraHeight = height;
+}
+
 Transform* Camera::GetTransform()
 {
     return &transform;
+}
+
+glm::mat4 Camera::GetProjectionMatrix()
+{
+    return projectionMatrix;
+}
+
+void Camera::Start()
+{
+}
+
+void Camera::Update(float deltaTime)
+{
+}
+
+void Camera::OnDestroy()
+{
+}
+
+void Camera::DrawProperties()
+{
+    Entity::DrawProperties();
+
+    ImGui::NewLine();
+    ImGui::Checkbox("Post processing", &isPostprocessing);
+
+    if (isPostprocessing)
+    {
+        postprocessing->DrawProperties();
+    }
+
+}
+
+void Camera::SceneDraw()
+{
+    Entity::SceneDraw();
+   // postprocessing.SceneDraw();
+
+}
+
+void Camera::Render()
+{
 }

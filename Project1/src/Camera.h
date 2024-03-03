@@ -6,9 +6,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Transform.h"
-
+//#include "Transform.h"
+#include "EntityManager/Entity.h"
 #include <vector>
+#include "RenderTexture.h"
+#include "PostProcessing/PostProcessing.h"
 
 enum Camera_Movement {
     FORWARD,
@@ -21,56 +23,58 @@ enum Camera_Movement {
 const float SPEED = 0.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
+const float DEFAULT_WIDTH = 1920;
+const float DEFAULT_HEIGHT = 1080;
+const float DEFAULT_NEARPLANE = 0.1f;
+const float DEFAULT_FARPLANE = 100.0f;
 
 
-class Camera
+enum class CameraType
+{
+    PERSPECTIVE = 0,
+    ORTHOGRAPHIC = 1
+};
+
+class Camera : public Entity
 {
 public:
     
     // camera options
     float MovementSpeed;
     float MouseSensitivity;
-    float Zoom;
+    float fov;
+    float cameraWidth;
+    float cameraHeight;
+    float nearPlane;
+    float farPlane;
+    bool isPostprocessing = false;
+    RenderTexture* renderTexture = nullptr;
+    CameraType cameraType = CameraType::PERSPECTIVE;
+    PostProcessing* postprocessing;
 
         // constructor with vectors
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f)) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) 
-    {
-       // Position = position;
-      //  WorldUp = up;
-       // Yaw = yaw;
-       // Pitch = pitch;
-
-
-        //Initial Values
-        transform.SetPosition(glm::vec3(0, 0.0f, 0));
-        transform.SetOrientationFromDirections(glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
-        transform.SetRotation(glm::vec3(0.0f, 180, 0.0f));
-
-
-    }
+    Camera();
+    ~Camera();
+   // Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f));
         
 
         // constructor with scalar values
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) 
-    {
-       // Position = glm::vec3(posX, posY, posZ);
-       // WorldUp = glm::vec3(upX, upY, upZ);
-       // Yaw = yaw;
-       // Pitch = pitch;
-
-        //Initial Values
-        transform.SetPosition(glm::vec3(3.0f, 0.0f, -33.0f));
-        transform.SetOrientationFromDirections(glm::vec3(0, 1, 0), glm::vec3(0, 1, 0));
-        transform.SetRotation(glm::vec3(0.0f, 180.0f, 0.0f));
+   // Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
 
-    }
+   // Transform transform;
 
-
-    Transform transform;
 
         // returns the view matrix calculated using Euler Angles and the LookAt Matrix
         glm::mat4 GetViewMatrix();
+
+       // void InitializeCamera(const CameraType& cameraType = CameraType::PERSPECTIVE);
+        void InitializeCamera(CameraType cameraType = CameraType::PERSPECTIVE, float fov = ZOOM, float nearPlane = DEFAULT_NEARPLANE, float farPlane = DEFAULT_FARPLANE);
+
+
+        void IntializeRenderTexture(FrameBufferSpecification framebufferSpecs);
+
+        void SetProjection();
   
 
         // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
@@ -85,34 +89,28 @@ public:
    
         void updateCameraVectors();
 
+        void Resize(float width,float height);
+
+        void SetCameraType(const CameraType& type);
+
+        void SetCameraWidthAndHeight(float width, float height);
 
         Transform* GetTransform();
+        glm::mat4 GetProjectionMatrix();
 
-        void SetTargetPosition(const glm::vec3& targetPos) {
-            targetPosition = targetPos;
-        }
+        // Inherited via Entity
+        void Start() override;
 
-        // Update camera position using lerp
-        void UpdateCameraPosition(float deltaTime) {
-            //Position = glm::mix(Position, targetPosition, lerpSpeed * deltaTime);         
+        void Update(float deltaTime) override;
 
+        void OnDestroy() override;
 
-            updateCameraVectors();
-
-        }
-
-       
-        
-
+        // Inherited via object
+        void DrawProperties() override;
+        void SceneDraw() override;
+        void Render() override;
 private:
-    // calculates the front vector from the Camera's (updated) Euler Angles
-   // void updateCameraVectors();
-
-
-    glm::vec3 targetPosition;
-
-    // Lerp speed for smooth interpolation
-//    float lerpSpeed = 2.0f;  
-   
+    glm::mat4 projectionMatrix;
+    float aspectRatio;
 };
 #endif

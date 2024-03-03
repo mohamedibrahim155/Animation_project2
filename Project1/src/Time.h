@@ -11,6 +11,5 @@ public :
 	double deltaTime;
 	double currentFrame;
 	double lastFrame;
-
 };
 

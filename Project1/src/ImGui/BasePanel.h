@@ -9,6 +9,7 @@ public:
 
 	bool isPanelOpen = true;
 	bool isEnable = true;
+	bool isHovered = false;
 
 
 	BasePanel();

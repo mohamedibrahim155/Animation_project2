@@ -36,12 +36,12 @@ public:
 
     std::vector<Vertex>       vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture*>      textures;
+    std::vector<BaseTexture*>      textures;
     BaseMaterial* meshMaterial;
     //unsigned int VAO;
     std::vector<Triangles> triangle;
 
-    Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture*>& textures);
+    Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<BaseTexture*>& textures);
     Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, BaseMaterial* meshMaterial);
     ~Mesh();
 
@@ -60,7 +60,7 @@ public:
     bool isWireFrame = false;
     std::string name;
 
-
+    void UpdateVertices();
 private:
     
     //unsigned int VBO, EBO;
@@ -70,7 +70,7 @@ private:
     bool isTextureScrolling = false;
 
     // Inherited via Object
-    void OnPropertyDraw() override;
-    void OnSceneDraw() override;
+    void DrawProperties() override;
+    void SceneDraw() override;
 };
 #endif

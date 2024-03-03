@@ -3,8 +3,6 @@
 #include <iostream>
 #include "Entity.h"
 
-class Animation;
-
 class EntityManager
 {
 public:
@@ -20,10 +18,10 @@ public:
 	void Start();
 	void Update(float deltaTime);
 	void Destroy(Entity* entity);
+	void Render();
 
 private :
 	std::unordered_map<std::string, Entity*>::iterator it;
 	std::vector<std::string> destroyedEntityList;
-
 };
 

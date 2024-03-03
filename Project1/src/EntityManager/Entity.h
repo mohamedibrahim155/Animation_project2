@@ -5,19 +5,16 @@
 
 class EntityManager;
 class EditorLayout;
-class Animation;
-class AnimationSystem;
 
 class Entity : public Object
 {
 public:
 
 	std::string entityID;
-	std::string tag;
+	std::string tag = "untagged";
 	std::string name = "EmptyGameObject";
 
 	Transform transform;
-
 
 	bool isStartInvoked = false;
 
@@ -27,13 +24,12 @@ public:
 	virtual void Start() = 0;
 	virtual void Update(float deltaTime) = 0;
 	virtual void OnDestroy() = 0;
-
-	 virtual void Destroy();
+	virtual void Render() = 0;
+	virtual void Destroy();
 
 	 //Inherited from Object
-	 virtual void OnPropertyDraw();
-	 virtual void OnSceneDraw();
-
+	 virtual void DrawProperties();
+	 virtual void SceneDraw();
 
 
 };

@@ -15,16 +15,6 @@ void CubeMapTexture::Bind()
 	GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, textureId));
 }
 
-void CubeMapTexture::UnBind()
-{
-	GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
-}
-
-void CubeMapTexture::SetActiveTexture(int id)
-{
-	GLCALL(glActiveTexture(GL_TEXTURE0 + id));
-}
-
 void CubeMapTexture::LoadTexture(std::vector<std::string> faces)
 {
     int width, height, channels;
@@ -61,4 +51,22 @@ bool CubeMapTexture::IsFileExists(const std::string& path)
 {
     std::ifstream file(path);
     return file.good();
+}
+
+void CubeMapTexture::Unbind()
+{
+    GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
+}
+
+void CubeMapTexture::SetTextureSlot(int place)
+{
+    GLCALL(glActiveTexture(GL_TEXTURE0 + place));
+}
+
+void CubeMapTexture::DrawProperties()
+{
+}
+
+void CubeMapTexture::SceneDraw()
+{
 }

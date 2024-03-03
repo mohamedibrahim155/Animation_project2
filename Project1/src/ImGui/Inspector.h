@@ -9,6 +9,9 @@ public:
 
 	void OnRender(float windowWidth, float windowHeight) override;
 
+private: 
+
+	void DrawEntityProperties();
 
 };
 

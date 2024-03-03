@@ -2,7 +2,7 @@
 #include <string>
 #include "Renderer.h"
 
-Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<Texture*>& textures)
+Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, std::vector<BaseTexture*>& textures)
 {
     
     this->vertices = vertices;
@@ -32,7 +32,7 @@ Mesh::~Mesh()
     vertices.clear();
     indices.clear();
 
-    for (Texture*  texture : textures)
+    for (BaseTexture*  texture : textures)
     {
         delete texture;
     }
@@ -66,9 +66,9 @@ void Mesh::DrawShadedMesh(Shader* shader)
 
     GLCALL(glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0));
 
-    meshMaterial->material()->diffuseTexture->Unbind();
-    meshMaterial->material()->specularTexture->Unbind();
-    meshMaterial->material()->alphaTexture->Unbind();
+   // ((Texture*)meshMaterial->material()->diffuseTexture)->Unbind();
+   // ((Texture*)meshMaterial->material()->specularTexture)->Unbind();
+  //  ((Texture*)meshMaterial->material()->alphaTexture)->Unbind();
     VAO->Unbind();
 
 
@@ -90,9 +90,10 @@ void Mesh::DrawSolidColorMesh(Shader* shader, glm::vec3 color)
 {
    
 
-     if (shader->blendMode == BlendMode::SOLID)
+    if (shader->blendMode == BlendMode::SOLID)
     {
-        meshMaterial->UpdateMaterial(shader);
+        shader->Bind();
+        shader->setVec3("objectColor", color.x, color.y, color.z);
     }
   
     VAO->Bind();
@@ -119,6 +120,14 @@ void Mesh::TextureScrolling(const bool& isScroll)
 
     this->isTextureScrolling = isScroll;
 
+}
+
+void Mesh::UpdateVertices()
+{
+    VAO->Bind();
+    VBO->UpdateVertexData(vertices.size() * sizeof(Vertex), &vertices[0]);
+    VAO->AddBuffer(*VBO, *layout);
+    VAO->Unbind();
 }
 
 void Mesh::SetupMesh()
@@ -157,11 +166,11 @@ void Mesh::CalculateTriangles()
     }
 }
 
-void Mesh::OnPropertyDraw()
+void Mesh::DrawProperties()
 {
     ImGui::InputText("##ObjectName", &name[0], 516);
 }
 
-void Mesh::OnSceneDraw()
+void Mesh::SceneDraw()
 {
 }
