@@ -24,7 +24,7 @@
 #include "BaseMaterial.h"
 #include "UnLitMaterial.h"
 #include "EntityManager/Entity.h"
-
+#include "Animation/Bone/Bone.h"
 
 
 
@@ -41,6 +41,8 @@ public:
     std::string id; //if needed 
 
     Texture* alphaMask;
+    glm::mat4 globalInverseTransformedMatrix;
+
 
     int offset;
     float size;
@@ -67,6 +69,10 @@ public:
     virtual void Update(float deltaTime) override;
     virtual void Render();
     virtual void OnDestroy();
+
+    BoneNode* GenerateBoneHierarchy(aiNode* node, const int depth = 0);
+
+    BoneNode* CreateNode(aiNode* node);
 private:
     
     void ProcessNode(aiNode* node, const aiScene* scene);   
@@ -86,7 +92,11 @@ private:
 
 
     // Inherited via Entity
-  
+    std::vector<BoneInfo> listOfBoneInfo;
+    std::map<std::string, int> boneIDMap;
+
+    BoneNode* rootBoneNode;
+
 
 };
 

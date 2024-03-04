@@ -145,6 +145,10 @@
     <ClCompile Include="Extern\imGui\ImGradient.cpp" />
     <ClCompile Include="Extern\imGui\ImGuizmo.cpp" />
     <ClCompile Include="Extern\imGui\ImSequencer.cpp" />
+    <ClCompile Include="src\Animation\Animation.cpp" />
+    <ClCompile Include="src\Animation\AnimationSequence.cpp" />
+    <ClCompile Include="src\Animation\AnimationSystem.cpp" />
+    <ClCompile Include="src\Animation\Bone\Bone.cpp" />
     <ClCompile Include="src\Math.cpp" />
     <ClCompile Include="src\PostProcessing\SinglePassEffect.cpp" />
     <ClCompile Include="src\PostProcessing\PixelizationEffect.cpp" />
@@ -209,6 +213,10 @@
     <ClInclude Include="Extern\imGui\ImGuizmo.h" />
     <ClInclude Include="Extern\imGui\ImSequencer.h" />
     <ClInclude Include="Extern\imGui\ImZoomSlider.h" />
+    <ClInclude Include="src\Animation\Animation.h" />
+    <ClInclude Include="src\Animation\AnimationSequence.h" />
+    <ClInclude Include="src\Animation\AnimationSystem.h" />
+    <ClInclude Include="src\Animation\Bone\Bone.h" />
     <ClInclude Include="src\Math.h" />
     <ClInclude Include="src\PostProcessing\SinglePassEffect.h" />
     <ClInclude Include="src\PostProcessing\PixelizationEffect.h" />
@@ -273,6 +281,8 @@
     <ClInclude Include="src\ImGui\ToolPanel.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\AnimationShader.frag" />
+    <None Include="Shaders\AnimationShader.vert" />
     <None Include="Shaders\color.frag" />
     <None Include="Shaders\color.vert" />
     <None Include="Shaders\DefaultShader_Fragment.frag" />

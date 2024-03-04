@@ -143,6 +143,8 @@ void Mesh::SetupMesh()
     layout->Push<float>(3);
     layout->Push<float>(2);
     layout->Push<float>(4);
+    layout->Push<float>(4); //bone ID
+    layout->Push<float>(4);  // Bone weight
 
     VAO->AddBuffer(*VBO, *layout);
     IBO = new IndexBufferObject(&indices[0], indices.size());

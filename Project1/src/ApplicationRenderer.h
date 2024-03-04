@@ -79,6 +79,7 @@ private:
 	Shader* solidColorShader;
 	Shader* alphaBlendShader;
 	Shader* alphaCutoutShader;
+	Shader* animationShader;
 
 	Shader* stencilShader;
 	Shader* skyboxShader;
