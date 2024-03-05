@@ -125,10 +125,12 @@ void ApplicationRenderer::WindowInitialize(int width, int height,  std::string w
     GraphicsRender::GetInstance().SetCamera(sceneViewcamera);
 
     sceneViewcamera->InitializeCamera(CameraType::PERSPECTIVE, 45.0f, 0.1f, 100.0f);
-    sceneViewcamera->transform.position = glm::vec3(0, 0, - 1.0f);
+    sceneViewcamera->transform.position = glm::vec3(0, 1.00, 5);
+    sceneViewcamera->transform.SetRotation(glm::vec3(0));
 
     gameScenecamera->InitializeCamera(CameraType::PERSPECTIVE, 45.0f, 0.1f, 100.0f);
-    gameScenecamera->transform.position = glm::vec3(0, 0, -1.0f);
+    gameScenecamera->transform.position = glm::vec3(0, 1.00, 5);
+    gameScenecamera->transform.SetRotation(glm::vec3(0));
 
     renderTextureCamera->InitializeCamera(CameraType::PERSPECTIVE, 45.0f, 0.1f, 100.0f);
     renderTextureCamera->transform.position = glm::vec3(0, 0, -1.0f);
@@ -224,12 +226,14 @@ void ApplicationRenderer::Start()
     // Model* characterModel = new Model("Models/Character/Adventurer Aland@Idle.fbx");
      //GraphicsRender::GetInstance().AddModelAndShader(characterModel, defaultShader);
 
-     SkinnedMeshRenderer* xBot = new SkinnedMeshRenderer("Models/Character/RaceDriver.fbx");
-     xBot->transform.SetScale(glm::vec3(0.01f));
+    // SkinnedMeshRenderer* xBot = new SkinnedMeshRenderer("Models/Character/X Bot.fbx");
+    // xBot->transform.SetScale(glm::vec3(0.01f));
+    //
+    // xBot->LoadAnimation("Models/Character/Rumba Dancing.fbx");
+    //
+    // GraphicsRender::GetInstance().AddModelAndShader(xBot, animationShader);
 
-     xBot->LoadAnimation("Models/Character/ChickenDance.fbx");
-
-     GraphicsRender::GetInstance().AddModelAndShader(xBot, animationShader);
+     CharacterAnimation* character = new CharacterAnimation();
 
 }
 

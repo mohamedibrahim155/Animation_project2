@@ -305,6 +305,10 @@ void SkinnedMeshRenderer::CalculateMatrices( BoneNode* node, const glm::mat4& pa
 
 }
 
+SkinnedMeshRenderer::SkinnedMeshRenderer()
+{
+}
+
 SkinnedMeshRenderer::SkinnedMeshRenderer(std::string const& path, bool isLoadTexture, bool isDebugModel)
 {
     this->isLoadTexture = isLoadTexture;
@@ -326,6 +330,17 @@ void SkinnedMeshRenderer::Start()
 
 void SkinnedMeshRenderer::Update(float deltaTime)
 {
+    if (!isPlaying) return;
+
+    if (deltaTime > 1.0f / 60.0f) { deltaTime = 1.0f / 60.0f; }
+
+    timeStep += deltaTime * 40;
+
+    if (timeStep >= currentAnimation->Duration)
+    {
+        timeStep = 0;
+    }
+
     UpdateSkeletonAnimation(deltaTime);
 }
 
@@ -399,6 +414,8 @@ void SkinnedMeshRenderer::LoadAnimation(const std::string& animationPath)
         }
 
         listOfAnimations.push_back(skeletalanimation);
+
+        currentAnimation = skeletalanimation;
     }
 
 
@@ -407,9 +424,11 @@ void SkinnedMeshRenderer::LoadAnimation(const std::string& animationPath)
 void SkinnedMeshRenderer::UpdateSkeletonAnimation(float deltaTime)
 {
 
-    currentAnimation = listOfAnimations[0];
-    double duration = currentAnimation->Duration;
-    timeStep += deltaTime * 10;
+  //  currentAnimation = listOfAnimations[0];
+
+ 
+
+
     std::string name = currentAnimation->Name;
     for (NodeAnim* nodeAnimation : currentAnimation->Channels)
     {
@@ -666,4 +685,15 @@ glm::vec3 SkinnedMeshRenderer::UpdateScale(std::vector<ScaleKeyFrame>& listOfKey
 const SkeletonAnim* SkinnedMeshRenderer::GetCurrentSkeletonAnimation()
 {
     return currentAnimation;
+}
+
+void SkinnedMeshRenderer::ChangeAnimation(int animationIndex)
+{
+
+    if (animationIndex< listOfAnimations.size())
+    {
+        currentAnimationIndex = animationIndex;
+        timeStep = 0;
+    }
+    currentAnimation = listOfAnimations[currentAnimationIndex];
 }

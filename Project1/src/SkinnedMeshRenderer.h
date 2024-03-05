@@ -4,25 +4,25 @@ class SkinnedMeshRenderer : public Model
 {
 public:
 
-
+    SkinnedMeshRenderer();
     SkinnedMeshRenderer(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false);
     virtual ~SkinnedMeshRenderer() {}
 
     int& GetBoneCount() { return boneCount; }
-    std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene) override;
+    virtual std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene) override;
     std::map<std::string, BoneInfo>& GetBoneMap() { return boneInfoMap; }
 
     BoneNode* GenerateBoneHierarchy(aiNode* ainode, const int depth = 0);
     BoneNode* CreateNode(aiNode* node);
 
-     void LoadModel(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false) override;
-     void DrawProperties() override;
-     void SceneDraw() override;
+    void LoadModel(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false) override;
+    virtual void DrawProperties() override;
+    virtual void SceneDraw() override;
 
-     void Start() override;
-     void Update(float deltaTime) override;
-     void Render() override;
-     void OnDestroy() override;
+    virtual void Start() override;
+    virtual void Update(float deltaTime) override;
+    virtual void Render() override;
+    virtual void OnDestroy() override;
      void Draw(Shader* shader) override;
 
     // void AddAnimation();
@@ -36,6 +36,12 @@ public:
     glm::vec3 UpdateScale(std::vector<ScaleKeyFrame>& listOfKeyFrames, float time);
 
      const SkeletonAnim* GetCurrentSkeletonAnimation();
+     SkeletonAnim* currentAnimation;
+     int currentAnimationIndex = 0;
+     bool isPlaying = false;
+
+     void ChangeAnimation(int animationIndex);
+
    private:
 
        std::map<std::string, BoneInfo> boneInfoMap;
@@ -50,11 +56,6 @@ public:
        void CalculateMatrices(BoneNode* boneNode, const glm::mat4& parentTransformationMatrix);
 
        std::vector<SkeletonAnim*> listOfAnimations;
-
-       SkeletonAnim* currentAnimation;
-
-       int currentAnimationIndex = 0;   
-
        float timeStep;
 };
 

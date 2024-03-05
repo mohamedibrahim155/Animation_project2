@@ -27,7 +27,7 @@
 #include "EntityManager/EntityManager.h"
 #include "CameraManager.h"
 #include "SkinnedMeshRenderer.h"
-
+#include "CharacterAnimation/CharacterAnimation.h"
 class ApplicationRenderer
 {
 public:
