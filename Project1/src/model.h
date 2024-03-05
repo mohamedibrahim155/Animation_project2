@@ -57,9 +57,9 @@ public:
     Model(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false);
     ~Model();
     void LoadModel(const Model& copyModel, bool isDebugModel = false);
-    void LoadModel(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false);
+    virtual void LoadModel(std::string const& path, bool isLoadTexture = true, bool isDebugModel = false);
     void Draw(Shader& shader);
-    void Draw(Shader* shader);
+    virtual void Draw(Shader* shader);
     void DrawSolidColor(const glm::vec4& color, bool isWireframe = false);
     
     virtual void DrawProperties();
@@ -73,18 +73,19 @@ public:
     BoneNode* GenerateBoneHierarchy(aiNode* node, const int depth = 0);
 
     BoneNode* CreateNode(aiNode* node);
-private:
-    
-    void ProcessNode(aiNode* node, const aiScene* scene);   
-   
-    std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
-    
+    virtual std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
+    std::map<std::string, int> boneIDMap;
+    std::vector<BoneInfo> listOfBoneInfo;
+
+
+protected:
+
     Texture* LoadDefaultTexture(aiTextureType type, std::string typeName);
     Texture* LoadMaterialTexture(aiMaterial* mat, aiTextureType type, std::string typeName);
 
     std::string TextureType(aiTextureType type);
    
-    void SetModelName();
+    
 
     const std::string alphaTextureDefaultPath = "Textures/DefaultTextures/Opacity_Default.png";
 
@@ -92,11 +93,13 @@ private:
 
 
     // Inherited via Entity
-    std::vector<BoneInfo> listOfBoneInfo;
-    std::map<std::string, int> boneIDMap;
+    glm::mat4 GlobalInverseTransformation;
 
     BoneNode* rootBoneNode;
+    void ProcessNode(aiNode* node, const aiScene* scene);
+    void SetModelName();
 
+    void SetDefaultVertexBoneData(Vertex& vertex);
 
 };
 

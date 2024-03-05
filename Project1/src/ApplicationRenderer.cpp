@@ -142,8 +142,7 @@ void ApplicationRenderer::WindowInitialize(int width, int height,  std::string w
 void ApplicationRenderer::InitializeShaders()
 {
     defaultShader = new Shader("Shaders/DefaultShader_Vertex.vert", "Shaders/DefaultShader_Fragment.frag");
-    animationShader = new Shader("Shaders/AnimationShader.vert", "Shaders/AnimationShader.frag");
-    
+   
     solidColorShader = new Shader("Shaders/SolidColor_Vertex.vert", "Shaders/SolidColor_Fragment.frag", SOLID);
     stencilShader = new Shader("Shaders/StencilOutline.vert", "Shaders/StencilOutline.frag", OPAQUE);
     //ScrollShader = new Shader("Shaders/ScrollTexture.vert", "Shaders/ScrollTexture.frag");
@@ -156,6 +155,9 @@ void ApplicationRenderer::InitializeShaders()
 
     skyboxShader = new Shader("Shaders/SkyboxShader.vert", "Shaders/SkyboxShader.frag");
     skyboxShader->modelUniform = false;
+
+    animationShader = new Shader("Shaders/AnimationShader.vert", "Shaders/AnimationShader.frag");
+    animationShader->blendMode = OPAQUE;
 
     GraphicsRender::GetInstance().defaultShader = defaultShader;
     GraphicsRender::GetInstance().solidColorShader = solidColorShader;
@@ -215,10 +217,17 @@ void ApplicationRenderer::Start()
 
    //  Model* plant = new Model("Models/Plant.fbm/Plant.fbx");
  
-     Model* characterModel = new Model("Models/Character/X Bot.fbx");
-    // Model* characterModel = new Model("Models/Character/Adventurer Aland@Idle.fbx");
+     //Model* characterModel = new Model("Models/Character/X Bot.fbx");
+     //characterModel->name = "CharacterModel";
+     //characterModel->transform.SetScale(glm::vec3(0.01f));
 
-  
+    // Model* characterModel = new Model("Models/Character/Adventurer Aland@Idle.fbx");
+     //GraphicsRender::GetInstance().AddModelAndShader(characterModel, defaultShader);
+
+     SkinnedMeshRenderer* xBot = new SkinnedMeshRenderer("Models/Character/X Bot.fbx");
+     xBot->transform.SetScale(glm::vec3(0.1f));
+
+     GraphicsRender::GetInstance().AddModelAndShader(xBot, animationShader);
 
 }
 
@@ -246,7 +255,6 @@ void ApplicationRenderer::PreRender()
     animationShader->setMat4("projection", projection);
     animationShader->setMat4("view", view);
     animationShader->setVec3("viewPos", sceneViewcamera->transform.position.x, sceneViewcamera->transform.position.y, sceneViewcamera->transform.position.z);
-    animationShader->setFloat("time", scrollTime);
     animationShader->setBool("isDepthBuffer", false);
 
     alphaBlendShader->Bind();
@@ -421,6 +429,14 @@ void ApplicationRenderer::RenderForCamera(Camera* camera, FrameBuffer* framebuff
     defaultShader->setFloat("time", scrollTime);
     defaultShader->setBool("isDepthBuffer", false);
 
+    animationShader->Bind();
+    LightManager::GetInstance().UpdateUniformValuesToShader(animationShader);
+    animationShader->setMat4("projection", projection);
+    animationShader->setMat4("view", view);
+    animationShader->setVec3("viewPos", sceneViewcamera->transform.position.x, sceneViewcamera->transform.position.y, sceneViewcamera->transform.position.z);
+    animationShader->setBool("isDepthBuffer", false);
+
+
     alphaBlendShader->Bind();
     LightManager::GetInstance().UpdateUniformValuesToShader(alphaBlendShader);
     alphaBlendShader->setMat4("projection", projection);
@@ -450,7 +466,7 @@ void ApplicationRenderer::RenderForCamera(Camera* camera, FrameBuffer* framebuff
     skyboxShader->setMat4("projection", projection);
     skyboxShader->setMat4("view", skyBoxView);
 
-    GraphicsRender::GetInstance().SkyBoxModel->Draw(*skyboxShader);
+    GraphicsRender::GetInstance().SkyBoxModel->Draw(skyboxShader);
     glDepthFunc(GL_LESS);
 
     

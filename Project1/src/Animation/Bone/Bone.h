@@ -9,6 +9,7 @@
 
 struct BoneInfo
 {
+	int id;
 	glm::mat4 boneOffset;				// Offset from the parent bone/node
 	glm::mat4 finalTransformation;		// Calculated transformation used for rendering
 	glm::mat4 globalTransformation;		// used for the bone hierarchy transformation calculations when animating
@@ -39,3 +40,4 @@ struct BoneWeightInfo
 };
 
 void AssimpToGLM(const aiMatrix4x4& a, glm::mat4& g);
+

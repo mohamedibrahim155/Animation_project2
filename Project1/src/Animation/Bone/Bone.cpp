@@ -7,3 +7,4 @@ void AssimpToGLM(const aiMatrix4x4& a, glm::mat4& g)
 	g[2][0] = a.a3; g[2][1] = a.b3; g[2][2] = a.c3; g[2][3] = a.d3;
 	g[3][0] = a.a4; g[3][1] = a.b4; g[3][2] = a.c4; g[3][3] = a.d4;
 }
+

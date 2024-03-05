@@ -213,6 +213,9 @@
     <ClCompile Include="src\Animation\Bone\Bone.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\SkinnedMeshRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Shader.h">
@@ -431,6 +434,12 @@
     <ClInclude Include="src\Animation\Bone\Bone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\SkinnedMeshRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Animation\Keyframe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.frag" />
@@ -457,7 +466,9 @@
     <None Include="Shaders\PostProcessing\Pixelization.frag" />
     <None Include="Shaders\PostProcessing\FinalOutputShader.vert" />
     <None Include="Shaders\PostProcessing\FinalOutputShader.frag" />
-    <None Include="Shaders\AnimationShader.vert" />
     <None Include="Shaders\AnimationShader.frag" />
+    <None Include="Shaders\AnimationShader.vert" />
+    <None Include="Shaders\fragmentTest.vert" />
+    <None Include="Shaders\fragmentTest.frag" />
   </ItemGroup>
 </Project>

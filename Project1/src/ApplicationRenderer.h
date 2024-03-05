@@ -26,7 +26,7 @@
 #include "InputManager/InputManager.h"
 #include "EntityManager/EntityManager.h"
 #include "CameraManager.h"
-
+#include "SkinnedMeshRenderer.h"
 
 class ApplicationRenderer
 {

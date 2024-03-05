@@ -50,8 +50,7 @@ in vec4 meshColour;
 
 uniform vec3 viewPos;
 uniform Material material;
-uniform bool isMasking;
-uniform bool isCutout;
+
 
 uniform int DIRECTION_LIGHT_ID =0;
 uniform int POINT_LIGHT_ID =1;

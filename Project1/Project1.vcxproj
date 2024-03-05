@@ -145,6 +145,7 @@
     <ClCompile Include="Extern\imGui\ImGradient.cpp" />
     <ClCompile Include="Extern\imGui\ImGuizmo.cpp" />
     <ClCompile Include="Extern\imGui\ImSequencer.cpp" />
+    <ClCompile Include="src\SkinnedMeshRenderer.cpp" />
     <ClCompile Include="src\Animation\Animation.cpp" />
     <ClCompile Include="src\Animation\AnimationSequence.cpp" />
     <ClCompile Include="src\Animation\AnimationSystem.cpp" />
@@ -213,6 +214,8 @@
     <ClInclude Include="Extern\imGui\ImGuizmo.h" />
     <ClInclude Include="Extern\imGui\ImSequencer.h" />
     <ClInclude Include="Extern\imGui\ImZoomSlider.h" />
+    <ClInclude Include="src\Animation\Keyframe.h" />
+    <ClInclude Include="src\SkinnedMeshRenderer.h" />
     <ClInclude Include="src\Animation\Animation.h" />
     <ClInclude Include="src\Animation\AnimationSequence.h" />
     <ClInclude Include="src\Animation\AnimationSystem.h" />
@@ -287,6 +290,8 @@
     <None Include="Shaders\color.vert" />
     <None Include="Shaders\DefaultShader_Fragment.frag" />
     <None Include="Shaders\DefaultShader_Vertex.vert" />
+    <None Include="Shaders\fragmentTest.frag" />
+    <None Include="Shaders\fragmentTest.vert" />
     <None Include="Shaders\PostProcessing\Chromatic.frag" />
     <None Include="Shaders\PostProcessing\Chromatic.vert" />
     <None Include="Shaders\lighting.frag" />

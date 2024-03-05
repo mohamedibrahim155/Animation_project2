@@ -154,6 +154,7 @@ void Model::LoadModel(std::string const& path, bool isLoadTexture, bool isDebugM
 
     std::cout << " Loaded  Model file  : " << directory << " Mesh count : " << scene->mNumMeshes << std::endl;
 
+    std::cout << " Loaded  Model file  : " << directory << " Mesh count : " << scene->mNumMeshes << std::endl;
     SetModelName();
 
     if (isDebugModel) return;
@@ -194,7 +195,7 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         vector.z = mesh->mVertices[i].z;
         vertex.Position = vector;
 
-       
+        SetDefaultVertexBoneData(vertex);
 
         // normals
         if (mesh->HasNormals())
@@ -233,8 +234,8 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             vertex.vRgb = glm::vec4(1.0f, 1.0f, 1.0f,1.0f);
         }
 
-        vertex.BoneID = glm::vec4(0);
-        vertex.BoneWeight = glm::vec4(0.0f);
+        //vertex.BoneID = glm::vec4(0);
+        //vertex.BoneWeight = glm::vec4(0.0f);
 
   
    
@@ -242,45 +243,34 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     }
 
     
-    if (mesh->HasBones())
-    {
-        boneWeightInfos.resize(mesh->mNumVertices);
-
-        for (unsigned int i = 0; i < mesh->mNumBones; ++i)
-        {
-            aiBone* bone = mesh->mBones[i];
-
-            std::string name(bone->mName.C_Str(), bone->mName.length); //	'\0'
-            boneIDMap.insert(std::pair<std::string, int>(name, listOfBoneInfo.size()));
-
-            BoneInfo boneInfo;
-
-            AssimpToGLM(bone->mOffsetMatrix, boneInfo.boneOffset);
-
-            listOfBoneInfo.emplace_back(boneInfo);
-
-            for (int weightIdx = 0; weightIdx < bone->mNumWeights; ++weightIdx)
-            {
-                aiVertexWeight& vertexWeight = bone->mWeights[weightIdx];
-               
-                BoneWeightInfo& boneInfo = boneWeightInfos[vertexWeight.mVertexId];
-                for (int infoIdx = 0; infoIdx < 4; ++infoIdx)
-                {
-                    if (boneInfo.boneWeight[infoIdx] == 0.f)  /// xyzw of boneIDs
-                    {
-                        boneInfo.boneID[infoIdx] = i; // boneIndex
-                        boneInfo.boneWeight[infoIdx] = vertexWeight.mWeight;
-                        break;
-                    }
-                }
-            }
-
-
-        }
-
-
-
-    }
+    //if (mesh->HasBones())
+    //{
+    //    boneWeightInfos.resize(mesh->mNumVertices);
+    //    for (unsigned int i = 0; i < mesh->mNumBones; ++i)
+    //    {
+    //        aiBone* bone = mesh->mBones[i];
+    //        std::string name(bone->mName.C_Str(), bone->mName.length); //	'\0'
+    //        boneIDMap.insert(std::pair<std::string, int>(name, listOfBoneInfo.size()));
+    //        BoneInfo boneInfo;
+    //        AssimpToGLM(bone->mOffsetMatrix, boneInfo.boneOffset);
+    //        listOfBoneInfo.emplace_back(boneInfo);
+    //        for (int weightIdx = 0; weightIdx < bone->mNumWeights; ++weightIdx)
+    //        {
+    //            aiVertexWeight& vertexWeight = bone->mWeights[weightIdx];
+    //           
+    //            BoneWeightInfo& boneInfo = boneWeightInfos[vertexWeight.mVertexId];
+    //            for (int infoIdx = 0; infoIdx < 4; ++infoIdx)
+    //            {
+    //                if (boneInfo.boneWeight[infoIdx] == 0.f)  /// xyzw of boneIDs
+    //                {
+    //                    boneInfo.boneID[infoIdx] = i; // boneIndex
+    //                    boneInfo.boneWeight[infoIdx] = vertexWeight.mWeight;
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 
     unsigned int vertArrayIndex = 0;
 
@@ -294,18 +284,18 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
     // process materials
 
-    if (mesh->HasBones())
+    /*if (mesh->HasBones())
     {
         for (unsigned int i = 0; i < vertices.size(); i++)
         {
-            //std::cout << "Bone ID : " << boneWeightInfos[i].boneID[0]
-            //    << " " << boneWeightInfos[i].boneID[1]
-            //    << " " << boneWeightInfos[i].boneID[2]
-            //    << " " << boneWeightInfos[i].boneID[3] << std::endl;
+            std::cout << "Bone ID : " << boneWeightInfos[i].boneID[0]
+                << " " << boneWeightInfos[i].boneID[1]
+                << " " << boneWeightInfos[i].boneID[2]
+                << " " << boneWeightInfos[i].boneID[3] << std::endl;
             vertices[i].BoneID = boneWeightInfos[i].boneID;
             vertices[i].BoneWeight = boneWeightInfos[i].boneWeight;
         }
-    }
+    }*/
    
     
     if (scene->mNumAnimations > 0)
@@ -538,6 +528,15 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
          {
              meshes[i]->name = "mesh " + std::to_string(i + 1);
          }
+     }
+ }
+
+ void Model::SetDefaultVertexBoneData(Vertex& vertex)
+ {
+     for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+     {
+         vertex.BoneID[i] = -1;
+         vertex.BoneWeight[i] = 0.0f;
      }
  }
 
