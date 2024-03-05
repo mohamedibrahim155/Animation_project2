@@ -30,9 +30,10 @@ public:
      void LoadAnimation(const std::string& animationPath);
      void UpdateSkeletonAnimation(float deltaTime);
      void UpdateAnimationFrame(NodeAnim* anim , glm::mat4& nodeTransform, double time);
-    glm::mat4 UpdateTranslation(std::vector<PositionKeyFrame>& listOfKeyFrames, float time);
-    glm::mat4 UpdateRotation(std::vector<RotationKeyFrame>& listOfKeyFrames, float time);
-    glm::mat4 UpdateScale(std::vector<ScaleKeyFrame>& listOfKeyFrames, float time);
+
+    glm::vec3 UpdateTranslation(std::vector<PositionKeyFrame>& listOfKeyFrames, float time);
+    glm::quat UpdateRotation(std::vector<RotationKeyFrame>& listOfKeyFrames, float time);
+    glm::vec3 UpdateScale(std::vector<ScaleKeyFrame>& listOfKeyFrames, float time);
 
      const SkeletonAnim* GetCurrentSkeletonAnimation();
    private:

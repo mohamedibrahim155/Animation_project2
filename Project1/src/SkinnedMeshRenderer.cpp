@@ -416,6 +416,12 @@ void SkinnedMeshRenderer::UpdateSkeletonAnimation(float deltaTime)
         std::string nodeName = nodeAnimation->Name;
 
         std::map<std::string, BoneNode*> ::iterator boneNode = boneNodeMap.find(nodeName);
+        std::map<std::string, BoneInfo> ::iterator boneInfoNode = boneInfoMap.find(nodeName);
+
+        //if (boneInfoNode == boneInfoMap.end()) continue;
+
+        //if (boneNode == boneNodeMap.end()) continue;
+
 
         if (boneNode != boneNodeMap.end())
         {
@@ -430,21 +436,24 @@ void SkinnedMeshRenderer::UpdateSkeletonAnimation(float deltaTime)
 
 void SkinnedMeshRenderer::UpdateAnimationFrame(NodeAnim* anim, glm::mat4& nodeTransform, double time)
 {
-    glm::mat4 translation = UpdateTranslation(anim->listOfPositionKeyFrames, time);
-    glm::mat4 rotation = UpdateRotation(anim->listOfRotationKeyframes, time);
-        glm::mat4 scale = UpdateScale(anim->listOfScaleKeyFrames, time);
+    glm::vec3 translation = UpdateTranslation(anim->listOfPositionKeyFrames, time);
+    glm::quat rotation = UpdateRotation(anim->listOfRotationKeyframes, time);
+        glm::vec3 scale = UpdateScale(anim->listOfScaleKeyFrames, time);
 
-        nodeTransform = translation * rotation * scale;
+        nodeTransform = glm::translate(glm::mat4(1),translation)
+            * glm::toMat4(rotation)
+            * glm::scale(glm::mat4(1.0f), scale);
+
 }
 
-glm::mat4 SkinnedMeshRenderer::UpdateTranslation(std::vector<PositionKeyFrame>& listOfKeyFrames, float time)
+glm::vec3 SkinnedMeshRenderer::UpdateTranslation(std::vector<PositionKeyFrame>& listOfKeyFrames, float time)
 {
     //glm
     if (listOfKeyFrames.size() == 1)
     {
         /// returns firstFrame;
 
-        return  glm::translate(glm::mat4(1), listOfKeyFrames[0].position);
+        return listOfKeyFrames[0].position;
 
       //  nodeTransform = nodeTransform * translation;
     }
@@ -466,7 +475,7 @@ glm::mat4 SkinnedMeshRenderer::UpdateTranslation(std::vector<PositionKeyFrame>& 
         {
 
             // entity->transform.position = anim->listOfPositionKeyFrames[keyFrameEndIndex - 1].position;
-            return glm::translate(glm::mat4(1), listOfKeyFrames[keyFrameEndIndex - 1].position);
+            return listOfKeyFrames[keyFrameEndIndex - 1].position;
 
         }
 
@@ -501,13 +510,15 @@ glm::mat4 SkinnedMeshRenderer::UpdateTranslation(std::vector<PositionKeyFrame>& 
 
         //  entity->transform.SetPosition(startKeyFrame.position + delta * result);
 
-       return glm::translate(glm::mat4(1), startKeyFrame.position + delta * result);
+        glm::vec3 endValue = startKeyFrame.position + delta * result;
+
+       return endValue;
 
     }
 
 }
 
-glm::mat4 SkinnedMeshRenderer::UpdateRotation(std::vector<RotationKeyFrame>& listOfKeyFrames, float time)
+glm::quat SkinnedMeshRenderer::UpdateRotation(std::vector<RotationKeyFrame>& listOfKeyFrames, float time)
 {
     if (listOfKeyFrames.size() == 1)
     {
@@ -515,7 +526,7 @@ glm::mat4 SkinnedMeshRenderer::UpdateRotation(std::vector<RotationKeyFrame>& lis
 
         glm::quat quaternionRotation = glm::quat(glm::radians(listOfKeyFrames[0].rotation_vec3));
 
-        return  glm::mat4_cast(quaternionRotation);
+        return  quaternionRotation;
 
      
 
@@ -539,7 +550,8 @@ glm::mat4 SkinnedMeshRenderer::UpdateRotation(std::vector<RotationKeyFrame>& lis
 
             glm::quat quaternionRotation = glm::quat(glm::radians(listOfKeyFrames[keyFrameEndIndex - 1].rotation_vec3));
 
-            return glm::mat4_cast(quaternionRotation);
+            return  quaternionRotation;
+
 
         }
 
@@ -577,13 +589,14 @@ glm::mat4 SkinnedMeshRenderer::UpdateRotation(std::vector<RotationKeyFrame>& lis
         glm::quat quaternionRotation = glm::slerp(startRotation, endRotation, result);
 
 
-        return glm::mat4_cast(quaternionRotation);
+        return  quaternionRotation;
+
 
 
     }
 }
 
-glm::mat4 SkinnedMeshRenderer::UpdateScale(std::vector<ScaleKeyFrame>& listOfKeyFrames, float time)
+glm::vec3 SkinnedMeshRenderer::UpdateScale(std::vector<ScaleKeyFrame>& listOfKeyFrames, float time)
 {
 
     if (listOfKeyFrames.size() == 1)
@@ -591,7 +604,7 @@ glm::mat4 SkinnedMeshRenderer::UpdateScale(std::vector<ScaleKeyFrame>& listOfKey
 
         // entity->transform.SetScale(animation->scaleKeyFrameList[0].scale);
 
-        return glm::scale(glm::mat4(1.0f), listOfKeyFrames[0].scale);
+        return listOfKeyFrames[0].scale;
       
 
     }
@@ -610,7 +623,7 @@ glm::mat4 SkinnedMeshRenderer::UpdateScale(std::vector<ScaleKeyFrame>& listOfKey
 
         if (keyFrameEndIndex >= listOfKeyFrames.size())
         {
-            return glm::scale(glm::mat4(1.0f), listOfKeyFrames[keyFrameEndIndex - 1].scale);
+            return  listOfKeyFrames[keyFrameEndIndex - 1].scale;
         }
         int keyFrameStartIndex = keyFrameEndIndex - 1;
 
@@ -642,7 +655,9 @@ glm::mat4 SkinnedMeshRenderer::UpdateScale(std::vector<ScaleKeyFrame>& listOfKey
 
         glm::vec3 delta = (endKeyFrame.scale - startKeyFrame.scale);
 
-       return glm::scale(glm::mat4(1.0f), startKeyFrame.scale + delta * result);
+        glm::vec3  endValue = startKeyFrame.scale + delta * result;
+
+        return endValue;
 
     }
 
