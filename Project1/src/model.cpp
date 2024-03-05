@@ -148,10 +148,6 @@ void Model::LoadModel(std::string const& path, bool isLoadTexture, bool isDebugM
 
     ProcessNode(scene->mRootNode, scene);
 
-    rootBoneNode = GenerateBoneHierarchy(scene->mRootNode);
-
-    globalInverseTransformedMatrix = glm::inverse(rootBoneNode->transformation);
-
     std::cout << " Loaded  Model file  : " << directory << " Mesh count : " << scene->mNumMeshes << std::endl;
 
     std::cout << " Loaded  Model file  : " << directory << " Mesh count : " << scene->mNumMeshes << std::endl;
@@ -558,34 +554,7 @@ std::shared_ptr<Mesh> Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
      GraphicsRender::GetInstance().RemoveModel(this);
  }
 
- BoneNode* Model::GenerateBoneHierarchy(aiNode* ainode, const int depth)
- {
-     BoneNode* node = CreateNode(ainode);
-     aiMatrix4x4& transformation = ainode->mTransformation;
-     aiVector3D position;
-     aiQuaternion rotation;
-     aiVector3D scaling;
-     transformation.Decompose(scaling, rotation, position);
 
-     glm::mat4 glmMatrix;
-     AssimpToGLM(transformation, glmMatrix);
-
-
-     for (int i = 0; i < ainode->mNumChildren; ++i)
-     {
-         node->children.emplace_back(GenerateBoneHierarchy(ainode->mChildren[i], depth + 1));
-     }
-     return node;
-
-  
- }
-
- BoneNode* Model::CreateNode(aiNode* node)
- {
-     BoneNode* newNode = new BoneNode(node->mName.C_Str());
-     AssimpToGLM(node->mTransformation, newNode->transformation);
-     return newNode;
- }
 
  void Model::DrawProperties()
  {

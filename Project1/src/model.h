@@ -70,12 +70,8 @@ public:
     virtual void Render();
     virtual void OnDestroy();
 
-    BoneNode* GenerateBoneHierarchy(aiNode* node, const int depth = 0);
-
-    BoneNode* CreateNode(aiNode* node);
     virtual std::shared_ptr<Mesh> ProcessMesh(aiMesh* mesh, const aiScene* scene);
     std::map<std::string, int> boneIDMap;
-    std::vector<BoneInfo> listOfBoneInfo;
 
 
 protected:
@@ -94,8 +90,6 @@ protected:
 
     // Inherited via Entity
     glm::mat4 GlobalInverseTransformation;
-
-    BoneNode* rootBoneNode;
     void ProcessNode(aiNode* node, const aiScene* scene);
     void SetModelName();
 

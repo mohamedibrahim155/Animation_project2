@@ -68,33 +68,6 @@ std::shared_ptr<Mesh> SkinnedMeshRenderer::ProcessMesh(aiMesh* mesh, const aiSce
         vertices.push_back(vertex);
     }
 
-    if (mesh->HasBones())
-    {
-        boneWeightInfos.resize(mesh->mNumVertices);
-        for (unsigned int i = 0; i < mesh->mNumBones; ++i)
-        {
-            aiBone* bone = mesh->mBones[i];
-            std::string name(bone->mName.C_Str(), bone->mName.length); //	'\0'
-            boneIDMap.insert(std::pair<std::string, int>(name, listOfBoneInfo.size()));
-            BoneInfo boneInfo;
-            AssimpToGLM(bone->mOffsetMatrix, boneInfo.boneOffset);
-            listOfBoneInfo.emplace_back(boneInfo);
-            for (int weightIdx = 0; weightIdx < bone->mNumWeights; ++weightIdx)
-            {
-                aiVertexWeight& vertexWeight = bone->mWeights[weightIdx];
-                BoneWeightInfo& boneInfo = boneWeightInfos[vertexWeight.mVertexId];
-                for (int infoIdx = 0; infoIdx < 4; ++infoIdx)
-                {
-                    if (boneInfo.boneWeight[infoIdx] == 0.f)  /// xyzw of boneIDs
-                    {
-                        boneInfo.boneID[infoIdx] = i; // boneIndex
-                        boneInfo.boneWeight[infoIdx] = vertexWeight.mWeight;
-                        break;
-                    }
-                }
-            }
-        }
-    }
 
     unsigned int vertArrayIndex = 0;
 
@@ -105,22 +78,6 @@ std::shared_ptr<Mesh> SkinnedMeshRenderer::ProcessMesh(aiMesh* mesh, const aiSce
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-
-    // process materials
-
-    if (mesh->HasBones())
-    {
-        for (unsigned int i = 0; i < vertices.size(); i++)
-        {
-            //std::cout << "Bone ID : " << boneWeightInfos[i].boneID[0]
-            //    << " " << boneWeightInfos[i].boneID[1]
-            //    << " " << boneWeightInfos[i].boneID[2]
-            //    << " " << boneWeightInfos[i].boneID[3] << std::endl;
-            vertices[i].BoneID = boneWeightInfos[i].boneID;
-            vertices[i].BoneWeight = boneWeightInfos[i].boneWeight;
-        }
-    }
-
 
     if (scene->mNumAnimations > 0)
     {
@@ -154,7 +111,7 @@ std::shared_ptr<Mesh> SkinnedMeshRenderer::ProcessMesh(aiMesh* mesh, const aiSce
     }
 
 
-   // ExtractBoneWeightForVertices(vertices, mesh, scene);
+    ExtractBoneWeightForVertices(vertices, mesh, scene);
 
 
     aiColor4D baseColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -199,6 +156,35 @@ std::shared_ptr<Mesh> SkinnedMeshRenderer::ProcessMesh(aiMesh* mesh, const aiSce
     return std::make_shared<Mesh>(vertices, indices, baseMeshMaterial);
 }
 
+BoneNode* SkinnedMeshRenderer::GenerateBoneHierarchy(aiNode* ainode, const int depth)
+{
+    BoneNode* node = CreateNode(ainode);
+    aiMatrix4x4& transformation = ainode->mTransformation;
+    aiVector3D position;
+    aiQuaternion rotation;
+    aiVector3D scaling;
+    transformation.Decompose(scaling, rotation, position);
+
+    glm::mat4 glmMatrix;
+    AssimpToGLM(transformation, glmMatrix);
+
+
+    for (int i = 0; i < ainode->mNumChildren; ++i)
+    {
+        node->children.emplace_back(GenerateBoneHierarchy(ainode->mChildren[i], depth + 1));
+    }
+    return node;
+
+
+}
+
+BoneNode* SkinnedMeshRenderer::CreateNode(aiNode* node)
+{
+    BoneNode* newNode = new BoneNode(node->mName.C_Str());
+    AssimpToGLM(node->mTransformation, newNode->transformation);
+    return newNode;
+}
+
 void SkinnedMeshRenderer::LoadModel(std::string const& path, bool isLoadTexture, bool isDebugModel)
 {
 	this->isLoadTexture = isLoadTexture;
@@ -221,7 +207,7 @@ void SkinnedMeshRenderer::LoadModel(std::string const& path, bool isLoadTexture,
 
     rootBoneNode = GenerateBoneHierarchy(scene->mRootNode);
 
-    globalInverseTransformedMatrix = glm::inverse(rootBoneNode->transformation);
+    //globalInverseTransformedMatrix = glm::inverse(rootBoneNode->transformation);
 
 	std::cout << " Loaded  Model file  : " << directory << " Mesh count : " << scene->mNumMeshes << std::endl;
 
@@ -233,9 +219,6 @@ void SkinnedMeshRenderer::LoadModel(std::string const& path, bool isLoadTexture,
 
 void SkinnedMeshRenderer::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
 {
-    std::map<std::string, BoneInfo>& boneMap = m_BoneInfoMap;
-
-   // int& boneCount = boneCount;
 
     for (int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
     {
@@ -243,21 +226,21 @@ void SkinnedMeshRenderer::ExtractBoneWeightForVertices(std::vector<Vertex>& vert
 
         std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
 
-        if (m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end())
+        if (boneInfoMap.find(boneName) == boneInfoMap.end())
         {
             BoneInfo newBoneInfo;
             newBoneInfo.id = boneCount;
            
             AssimpToGLM(mesh->mBones[boneIndex]->mOffsetMatrix, newBoneInfo.boneOffset);
             listOfBoneInfo.emplace_back(newBoneInfo);
-            m_BoneInfoMap[boneName] = newBoneInfo;
+            boneInfoMap[boneName] = newBoneInfo;
 
             boneID = boneCount;
             boneCount++;
         }
         else
         {
-            boneID = m_BoneInfoMap[boneName].id;
+            boneID = boneInfoMap[boneName].id;
         }
 
         assert(boneID != -1);
@@ -292,9 +275,7 @@ void SkinnedMeshRenderer::SetVertexBoneData(Vertex& vertex, int boneID, float we
 
 void SkinnedMeshRenderer::UpdateMeshRendererBones()
 {
-    //glm::mat4 rootTransformation = glm::mat4(1.f);
     glm::mat4 rootTransformation = glm::mat4(1.0f);
-   // glm::mat4 rootTransformation = transform.GetModelMatrix();
 
     CalculateMatrices(this, rootBoneNode, rootTransformation);
 }
@@ -307,15 +288,14 @@ void SkinnedMeshRenderer::CalculateMatrices(Model* model, BoneNode* node, const 
 
     glm::mat4 globalTransformation = parentTransformationMatrix * transformationMatrix;
 
-   // std::map<std::string, int> ::iterator boneMapIt = model->boneIDMap.find(nodeName);
 
-    std::map<std::string, int> ::iterator boneMapIt  = boneIDMap.find(nodeName);
+    std::map<std::string, BoneInfo> ::iterator boneMapIt  = boneInfoMap.find(nodeName);
 
 
-    if (boneMapIt != boneIDMap.end())
+    if (boneMapIt != boneInfoMap.end())
     {
-        BoneInfo& boneInfo = model->listOfBoneInfo[boneMapIt->second];
-        boneInfo.finalTransformation = model->globalInverseTransformedMatrix * globalTransformation * boneInfo.boneOffset;
+        BoneInfo& boneInfo = listOfBoneInfo[boneMapIt->second.id];
+        boneInfo.finalTransformation = /*model->globalInverseTransformedMatrix **/ globalTransformation * boneInfo.boneOffset;
         boneInfo.globalTransformation = globalTransformation;
     }
 

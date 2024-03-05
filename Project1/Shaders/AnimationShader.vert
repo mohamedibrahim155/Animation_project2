@@ -26,7 +26,8 @@ void main()
 {
    
 
-    FragPosition = vec3(model * vec4(aPos, 1.0));
+  //  FragPosition = vec3(model * vec4(aPos, 1.0));
+    FragPosition = aPos;
 
 	vec4 totalPosition = vec4(FragPosition,1);
     if (isBones)
@@ -46,7 +47,7 @@ void main()
 	
 	 meshColour = aColor;
 	//gl_Position = projection * view * model;
-		gl_Position = projection * view  * totalPosition;
+		gl_Position = projection * view * model * totalPosition;
 }
 
 
