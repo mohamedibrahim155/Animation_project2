@@ -25,9 +25,20 @@ public:
      void OnDestroy() override;
      void Draw(Shader* shader) override;
 
+    // void AddAnimation();
+
+     void LoadAnimation(const std::string& animationPath);
+     void UpdateSkeletonAnimation(float deltaTime);
+     void UpdateAnimationFrame(NodeAnim* anim , glm::mat4& nodeTransform, double time);
+    glm::mat4 UpdateTranslation(std::vector<PositionKeyFrame>& listOfKeyFrames, float time);
+    glm::mat4 UpdateRotation(std::vector<RotationKeyFrame>& listOfKeyFrames, float time);
+    glm::mat4 UpdateScale(std::vector<ScaleKeyFrame>& listOfKeyFrames, float time);
+
+     const SkeletonAnim* GetCurrentSkeletonAnimation();
    private:
 
        std::map<std::string, BoneInfo> boneInfoMap;
+       std::map<std::string, BoneNode*> boneNodeMap;
        std::vector<BoneInfo> listOfBoneInfo;
        int boneCount = 0;
        BoneNode* rootBoneNode;
@@ -35,8 +46,14 @@ public:
        void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
        void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
        void UpdateMeshRendererBones();
-       void CalculateMatrices(Model* model, BoneNode* boneNode, const glm::mat4& parentTransformationMatrix);
+       void CalculateMatrices(BoneNode* boneNode, const glm::mat4& parentTransformationMatrix);
 
+       std::vector<SkeletonAnim*> listOfAnimations;
 
+       SkeletonAnim* currentAnimation;
+
+       int currentAnimationIndex = 0;   
+
+       float timeStep;
 };
 

@@ -53,10 +53,11 @@ struct NodeAnim
 
 struct SkeletonAnim
 {
+	SkeletonAnim() {}
 	std::string Name;
 	double TicksPerSecond;
 	double Duration;
-	BoneNode* RootNode;
+	//BoneNode* RootNode;
 	std::vector<NodeAnim*> Channels;
 };
 

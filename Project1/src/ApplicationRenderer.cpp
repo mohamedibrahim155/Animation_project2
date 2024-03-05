@@ -224,8 +224,10 @@ void ApplicationRenderer::Start()
     // Model* characterModel = new Model("Models/Character/Adventurer Aland@Idle.fbx");
      //GraphicsRender::GetInstance().AddModelAndShader(characterModel, defaultShader);
 
-     SkinnedMeshRenderer* xBot = new SkinnedMeshRenderer("Models/Character/X Bot.fbx");
-     xBot->transform.SetScale(glm::vec3(0.1f));
+     SkinnedMeshRenderer* xBot = new SkinnedMeshRenderer("Models/Character/RaceDriver.fbx");
+     xBot->transform.SetScale(glm::vec3(0.01f));
+
+     xBot->LoadAnimation("Models/Character/ChickenDance.fbx");
 
      GraphicsRender::GetInstance().AddModelAndShader(xBot, animationShader);
 

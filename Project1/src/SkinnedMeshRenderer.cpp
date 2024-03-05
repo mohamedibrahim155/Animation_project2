@@ -168,6 +168,7 @@ BoneNode* SkinnedMeshRenderer::GenerateBoneHierarchy(aiNode* ainode, const int d
     glm::mat4 glmMatrix;
     AssimpToGLM(transformation, glmMatrix);
 
+    boneNodeMap[node->name] = node;
 
     for (int i = 0; i < ainode->mNumChildren; ++i)
     {
@@ -277,10 +278,10 @@ void SkinnedMeshRenderer::UpdateMeshRendererBones()
 {
     glm::mat4 rootTransformation = glm::mat4(1.0f);
 
-    CalculateMatrices(this, rootBoneNode, rootTransformation);
+    CalculateMatrices( rootBoneNode, rootTransformation);
 }
 
-void SkinnedMeshRenderer::CalculateMatrices(Model* model, BoneNode* node, const glm::mat4& parentTransformationMatrix)
+void SkinnedMeshRenderer::CalculateMatrices( BoneNode* node, const glm::mat4& parentTransformationMatrix)
 {
     std::string nodeName(node->name);
 
@@ -290,8 +291,6 @@ void SkinnedMeshRenderer::CalculateMatrices(Model* model, BoneNode* node, const 
 
 
     std::map<std::string, BoneInfo> ::iterator boneMapIt  = boneInfoMap.find(nodeName);
-
-
     if (boneMapIt != boneInfoMap.end())
     {
         BoneInfo& boneInfo = listOfBoneInfo[boneMapIt->second.id];
@@ -301,7 +300,7 @@ void SkinnedMeshRenderer::CalculateMatrices(Model* model, BoneNode* node, const 
 
     for (int i = 0; i < node->children.size(); i++)
     {
-        CalculateMatrices(this, node->children[i], globalTransformation);
+        CalculateMatrices(node->children[i], globalTransformation);
     }
 
 }
@@ -327,6 +326,7 @@ void SkinnedMeshRenderer::Start()
 
 void SkinnedMeshRenderer::Update(float deltaTime)
 {
+    UpdateSkeletonAnimation(deltaTime);
 }
 
 void SkinnedMeshRenderer::Render()
@@ -371,4 +371,284 @@ void SkinnedMeshRenderer::Draw(Shader* shader)
     {
         meshes[i]->Draw(shader);
     }
+}
+
+void SkinnedMeshRenderer::LoadAnimation(const std::string& animationPath)
+{
+    Assimp::Importer importer;
+
+    const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+
+    if (scene->HasAnimations())
+    {
+        int animationCount = scene->mNumAnimations;
+        aiAnimation* animation = scene->mAnimations[0];
+
+        SkeletonAnim* skeletalanimation = new SkeletonAnim();
+        skeletalanimation->Name = animation->mName.C_Str();
+        skeletalanimation->Duration = animation->mDuration;
+
+        for (int i = 0; i < animation->mNumChannels; i++)
+        {
+            aiNodeAnim* animNode = animation->mChannels[i];
+
+            NodeAnim* anim = new NodeAnim(animation->mChannels[i]->mNodeName.C_Str(), animNode);
+
+            skeletalanimation->Channels.push_back(anim);
+
+        }
+
+        listOfAnimations.push_back(skeletalanimation);
+    }
+
+
+}
+
+void SkinnedMeshRenderer::UpdateSkeletonAnimation(float deltaTime)
+{
+
+    currentAnimation = listOfAnimations[0];
+    double duration = currentAnimation->Duration;
+    timeStep += deltaTime * 10;
+    std::string name = currentAnimation->Name;
+    for (NodeAnim* nodeAnimation : currentAnimation->Channels)
+    {
+        std::string nodeName = nodeAnimation->Name;
+
+        std::map<std::string, BoneNode*> ::iterator boneNode = boneNodeMap.find(nodeName);
+
+        if (boneNode != boneNodeMap.end())
+        {
+            glm::mat4& transformedMatrix = boneNode->second->transformation;
+
+            UpdateAnimationFrame(nodeAnimation, transformedMatrix, timeStep);
+        }
+    }
+  
+    
+}
+
+void SkinnedMeshRenderer::UpdateAnimationFrame(NodeAnim* anim, glm::mat4& nodeTransform, double time)
+{
+    glm::mat4 translation = UpdateTranslation(anim->listOfPositionKeyFrames, time);
+    glm::mat4 rotation = UpdateRotation(anim->listOfRotationKeyframes, time);
+        glm::mat4 scale = UpdateScale(anim->listOfScaleKeyFrames, time);
+
+        nodeTransform = translation * rotation * scale;
+}
+
+glm::mat4 SkinnedMeshRenderer::UpdateTranslation(std::vector<PositionKeyFrame>& listOfKeyFrames, float time)
+{
+    //glm
+    if (listOfKeyFrames.size() == 1)
+    {
+        /// returns firstFrame;
+
+        return  glm::translate(glm::mat4(1), listOfKeyFrames[0].position);
+
+      //  nodeTransform = nodeTransform * translation;
+    }
+    else if (listOfKeyFrames.size() > 1)
+    {
+        int keyFrameEndIndex = 0;
+
+        for (; keyFrameEndIndex < listOfKeyFrames.size(); keyFrameEndIndex++)
+        {
+            if (listOfKeyFrames[keyFrameEndIndex].time > time)
+            {
+                break;
+
+            }
+        }
+
+
+        if (keyFrameEndIndex >= listOfKeyFrames.size())
+        {
+
+            // entity->transform.position = anim->listOfPositionKeyFrames[keyFrameEndIndex - 1].position;
+            return glm::translate(glm::mat4(1), listOfKeyFrames[keyFrameEndIndex - 1].position);
+
+        }
+
+
+        int keyFrameStartIndex = keyFrameEndIndex - 1;
+
+        PositionKeyFrame startKeyFrame = listOfKeyFrames[keyFrameStartIndex];
+        PositionKeyFrame endKeyFrame = listOfKeyFrames[keyFrameEndIndex];
+
+        float percent = (time - startKeyFrame.time) / (endKeyFrame.time - startKeyFrame.time);
+        float result = 0.0f;
+        switch (endKeyFrame.easeType)
+        {
+        case EasingType::Linear:
+            result = percent;
+            break;
+
+        case EasingType::sineEaseIn:
+            result = glm::sineEaseIn(percent);
+            break;
+
+        case EasingType::sineEaseOut:
+            result = glm::sineEaseOut(percent);
+            break;
+
+        case EasingType::sineEaseInOut:
+            result = glm::sineEaseInOut(percent);
+            break;
+        }
+
+        glm::vec3 delta = (endKeyFrame.position - startKeyFrame.position);
+
+        //  entity->transform.SetPosition(startKeyFrame.position + delta * result);
+
+       return glm::translate(glm::mat4(1), startKeyFrame.position + delta * result);
+
+    }
+
+}
+
+glm::mat4 SkinnedMeshRenderer::UpdateRotation(std::vector<RotationKeyFrame>& listOfKeyFrames, float time)
+{
+    if (listOfKeyFrames.size() == 1)
+    {
+        /// returns firstFrame;
+
+        glm::quat quaternionRotation = glm::quat(glm::radians(listOfKeyFrames[0].rotation_vec3));
+
+        return  glm::mat4_cast(quaternionRotation);
+
+     
+
+    }
+    else if (listOfKeyFrames.size() > 1)
+    {
+        int keyFrameEndIndex = 0;
+
+        for (; keyFrameEndIndex < listOfKeyFrames.size(); keyFrameEndIndex++)
+        {
+            if (listOfKeyFrames[keyFrameEndIndex].time > time)
+            {
+                break;
+
+            }
+        }
+
+
+        if (keyFrameEndIndex >= listOfKeyFrames.size())
+        {
+
+            glm::quat quaternionRotation = glm::quat(glm::radians(listOfKeyFrames[keyFrameEndIndex - 1].rotation_vec3));
+
+            return glm::mat4_cast(quaternionRotation);
+
+        }
+
+
+        int keyFrameStartIndex = keyFrameEndIndex - 1;
+
+        RotationKeyFrame startKeyFrame = listOfKeyFrames[keyFrameStartIndex];
+        RotationKeyFrame endKeyFrame = listOfKeyFrames[keyFrameEndIndex];
+
+        float percent = (time - startKeyFrame.time) / (endKeyFrame.time - startKeyFrame.time);
+        float result = 0.0f;
+
+        switch (endKeyFrame.easeType)
+        {
+        case EasingType::Linear:
+            result = percent;
+            break;
+
+        case EasingType::sineEaseIn:
+            result = glm::sineEaseIn(percent);
+            break;
+
+        case EasingType::sineEaseOut:
+            result = glm::sineEaseOut(percent);
+            break;
+
+        case EasingType::sineEaseInOut:
+            result = glm::sineEaseInOut(percent);
+            break;
+        }
+
+        glm::quat startRotation = glm::quat(glm::radians(startKeyFrame.rotation_vec3));
+        glm::quat endRotation = glm::quat(glm::radians(endKeyFrame.rotation_vec3));
+
+        glm::quat quaternionRotation = glm::slerp(startRotation, endRotation, result);
+
+
+        return glm::mat4_cast(quaternionRotation);
+
+
+    }
+}
+
+glm::mat4 SkinnedMeshRenderer::UpdateScale(std::vector<ScaleKeyFrame>& listOfKeyFrames, float time)
+{
+
+    if (listOfKeyFrames.size() == 1)
+    {
+
+        // entity->transform.SetScale(animation->scaleKeyFrameList[0].scale);
+
+        return glm::scale(glm::mat4(1.0f), listOfKeyFrames[0].scale);
+      
+
+    }
+    else if (listOfKeyFrames.size() > 1)
+    {
+        int keyFrameEndIndex = 0;
+
+        for (; keyFrameEndIndex < listOfKeyFrames.size(); keyFrameEndIndex++)
+        {
+            if (listOfKeyFrames[keyFrameEndIndex].time > time)
+            {
+                break;
+
+            }
+        }
+
+        if (keyFrameEndIndex >= listOfKeyFrames.size())
+        {
+            return glm::scale(glm::mat4(1.0f), listOfKeyFrames[keyFrameEndIndex - 1].scale);
+        }
+        int keyFrameStartIndex = keyFrameEndIndex - 1;
+
+        ScaleKeyFrame startKeyFrame = listOfKeyFrames[keyFrameStartIndex];
+        ScaleKeyFrame endKeyFrame = listOfKeyFrames[keyFrameEndIndex];
+
+        float percent = (time - startKeyFrame.time) / (endKeyFrame.time - startKeyFrame.time);
+        float result = 0.0f;
+
+
+        switch (endKeyFrame.easeType)
+        {
+        case EasingType::Linear:
+            result = percent;
+            break;
+
+        case EasingType::sineEaseIn:
+            result = glm::sineEaseIn(percent);
+            break;
+
+        case EasingType::sineEaseOut:
+            result = glm::sineEaseOut(percent);
+            break;
+
+        case EasingType::sineEaseInOut:
+            result = glm::sineEaseInOut(percent);
+            break;
+        }
+
+        glm::vec3 delta = (endKeyFrame.scale - startKeyFrame.scale);
+
+       return glm::scale(glm::mat4(1.0f), startKeyFrame.scale + delta * result);
+
+    }
+
+}
+
+const SkeletonAnim* SkinnedMeshRenderer::GetCurrentSkeletonAnimation()
+{
+    return currentAnimation;
 }
