@@ -32,8 +32,9 @@ NodeAnim::NodeAnim(const std::string& name, const aiNodeAnim* channel) :Name(nam
 		float timeStamp = channel->mRotationKeys[rotationIndex].mTime;
 
 	
+		glm::quat rot = GetGLMQuat(aiOrientation);
 
-		glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(GetGLMQuat(aiOrientation)));
+		glm::vec3 eulerRotation = glm::degrees(glm::eulerAngles(rot));
 
 		RotationKeyFrame data(eulerRotation, timeStamp, EasingType::Linear);
 		//RotationKeyFrame data(GetGLMQuat(aiOrientation), timeStamp, EasingType::Linear);
